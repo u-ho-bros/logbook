@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Shell;
  * スレッドの状態を監視します
  *
  */
+@Deprecated
 public final class ThreadStateObserver extends Thread {
 
     private final Shell shell;

@@ -1,5 +1,8 @@
 package logbook.gui;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import logbook.config.AppConfig;
 import logbook.config.ItemConfig;
 import logbook.config.ItemMasterConfig;
@@ -7,7 +10,7 @@ import logbook.config.ShipConfig;
 import logbook.config.ShipGroupConfig;
 import logbook.constants.AppConstants;
 import logbook.gui.background.AsyncExecApplicationMain;
-import logbook.gui.background.AsyncExecApplicationMainConsole;
+import logbook.gui.background.AsyncExecConsole;
 import logbook.gui.background.AsyncExecUpdateCheck;
 import logbook.gui.listener.BathwaterTableAdapter;
 import logbook.gui.listener.CalcExpAdapter;
@@ -28,7 +31,6 @@ import logbook.gui.logic.Sound;
 import logbook.gui.widgets.FleetComposite;
 import logbook.server.proxy.ProxyServer;
 import logbook.thread.ThreadManager;
-import logbook.thread.ThreadStateObserver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,8 +86,6 @@ public final class ApplicationMain {
             try {
                 // リソースを開放する
                 SWTResourceManager.dispose();
-                // プロキシサーバーをシャットダウンする
-                ProxyServer.end();
 
                 // 設定を書き込みます
                 AppConfig.store();
@@ -182,8 +182,8 @@ public final class ApplicationMain {
         } finally {
             // リソースを開放する
             SWTResourceManager.dispose();
-            // プロキシサーバーをシャットダウンする
-            ProxyServer.end();
+            ScheduledExecutorService executor = ThreadManager.getExecutorService();
+            executor.shutdownNow();
         }
     }
 
@@ -651,7 +651,7 @@ public final class ApplicationMain {
 
     /**
      * トレイアイコンを追加します
-     * 
+     *
      * @param display
      * @return
      */
@@ -669,7 +669,7 @@ public final class ApplicationMain {
 
     /**
      * 縮小表示と通常表示とを切り替えます
-     * 
+     *
      * @param minimum
      * @param controls 隠すコントロール
      */
@@ -684,20 +684,16 @@ public final class ApplicationMain {
      * スレッドを開始します
      */
     private void startThread() {
+        ScheduledExecutorService executor = ThreadManager.getExecutorService();
+
         // プロキシサーバーを開始する
-        ThreadManager.regist(ProxyServer.getInstance());
-
+        executor.submit(new ProxyServer(AppConfig.get().getListenPort(), this.shell));
         // 非同期で画面を更新するスレッド
-        ThreadManager.regist(new AsyncExecApplicationMain(this));
+        executor.scheduleWithFixedDelay(new AsyncExecApplicationMain(this), 0, 1, TimeUnit.SECONDS);
         // 非同期でログを出すスレッド
-        ThreadManager.regist(new AsyncExecApplicationMainConsole(this.console));
+        executor.scheduleWithFixedDelay(new AsyncExecConsole(this.console), 0, 500, TimeUnit.MILLISECONDS);
         // サウンドを出すスレッド
-        ThreadManager.regist(new Sound.PlayerThread());
-        // スレッドを監視するスレッド
-        ThreadManager.regist(new ThreadStateObserver(this.shell));
-
-        ThreadManager.start();
-
+        executor.scheduleWithFixedDelay(new Sound.PlayerThread(), 0, 500, TimeUnit.MILLISECONDS);
         // アップデートチェックする
         if (AppConfig.get().isCheckUpdate()) {
             new AsyncExecUpdateCheck(this.shell).start();

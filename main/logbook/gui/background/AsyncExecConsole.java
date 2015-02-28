@@ -1,7 +1,5 @@
 package logbook.gui.background;
 
-import java.util.concurrent.TimeUnit;
-
 import logbook.data.context.GlobalContext;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,20 +11,19 @@ import org.eclipse.swt.widgets.List;
  * 非同期にコンソールを更新します
  *
  */
-public final class AsyncExecApplicationMainConsole extends Thread {
-    private static final Logger LOG = LogManager.getLogger(AsyncExecApplicationMainConsole.class);
-    private static final int CYCLE = 500;
+public final class AsyncExecConsole extends Thread {
+    private static final Logger LOG = LogManager.getLogger(AsyncExecConsole.class);
     private static final int MAX_LOG_LINES = 200;
 
     private final List console;
 
     /**
      * 非同期にコンソールを更新します
-     * 
+     *
      * @param display
      * @param console
      */
-    public AsyncExecApplicationMainConsole(List console) {
+    public AsyncExecConsole(List console) {
         this.console = console;
         this.setName("logbook_async_exec_application_main_console");
     }
@@ -37,13 +34,10 @@ public final class AsyncExecApplicationMainConsole extends Thread {
     @Override
     public void run() {
         try {
-            while (true) {
-                // ログメッセージを取り出す
-                String message;
-                while ((message = GlobalContext.getConsoleMessage()) != null) {
-                    Display.getDefault().syncExec(new UpdateConsoleTask(this.console, message));
-                }
-                TimeUnit.MILLISECONDS.sleep(CYCLE);
+            // ログメッセージを取り出す
+            String message;
+            while ((message = GlobalContext.getConsoleMessage()) != null) {
+                Display.getDefault().syncExec(new UpdateConsoleTask(this.console, message));
             }
         } catch (Exception e) {
             LOG.fatal("スレッドが異常終了しました", e);

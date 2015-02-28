@@ -1,11 +1,15 @@
 package logbook.server.proxy;
 
-import logbook.config.AppConfig;
+import java.net.BindException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 
 /**
  * プロキシサーバーです
@@ -15,14 +19,14 @@ public final class ProxyServer extends Thread {
 
     private static final Logger LOG = LogManager.getLogger(ProxyServer.class);
 
-    private static ProxyServer proxyServer;
-
     private final int port;
+    private final Shell shell;
 
     private Server server;
 
-    private ProxyServer(int port) {
+    public ProxyServer(int port, Shell shell) {
         this.port = port;
+        this.shell = shell;
         this.setName("logbook_proxy_server");
     }
 
@@ -36,31 +40,44 @@ public final class ProxyServer extends Thread {
             servletHandler.setServer(this.server);
 
             this.server.setHandler(servletHandler);
-
-            this.server.start();
-            this.server.join();
+            try {
+                try {
+                    this.server.start();
+                    try {
+                        this.server.join();
+                    } catch (InterruptedException e) {
+                    }
+                } catch (Exception e) {
+                    this.handle(e);
+                }
+            } finally {
+                this.server.stop();
+            }
         } catch (Exception e) {
             LOG.fatal("サーバーの起動に失敗しました", e);
             throw new RuntimeException(e);
         }
     }
 
-    private void shutdown() {
-        try {
-            this.server.stop();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private void handle(Exception e) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("プロキシサーバーが予期せず終了しました").append("\r\n");
+        sb.append("例外 : " + e.getClass().getName()).append("\r\n");
+        sb.append("原因 : " + e.getMessage()).append("\r\n");
+        if (e instanceof BindException) {
+            sb.append("おそらく、二重起動か同じポートを使用しているアプリケーションがあります。").append("\r\n");
         }
-    }
 
-    public static ProxyServer getInstance() {
-        if (proxyServer == null) {
-            proxyServer = new ProxyServer(AppConfig.get().getListenPort());
-        }
-        return proxyServer;
-    }
+        final String message = sb.toString();
 
-    public static void end() {
-        proxyServer.shutdown();
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                MessageBox box = new MessageBox(ProxyServer.this.shell, SWT.YES | SWT.ICON_ERROR);
+                box.setText("プロキシサーバーが予期せず終了しました");
+                box.setMessage(message);
+                box.open();
+            }
+        });
     }
 }

@@ -41,7 +41,7 @@ public final class Sound {
 
     /**
      * サウンドファイルを再生待ちキューに入れます
-     * 
+     *
      * @param file ファイル
      */
     public static void addQueue(File file) {
@@ -50,7 +50,7 @@ public final class Sound {
 
     /**
      * サウンドファイルを再生します
-     * 
+     *
      * @param file ファイル
      */
     public static void play(File file) {
@@ -101,7 +101,7 @@ public final class Sound {
 
     /**
      * リストからランダムにサウンドファイルを再生します
-     * 
+     *
      * @param files ファイルリスト
      */
     public static void randomPlay(List<File> files) {
@@ -112,7 +112,7 @@ public final class Sound {
 
     /**
      * 遠征から帰投した時に再生するサウンドを再生します
-     * 
+     *
      */
     public static void randomExpeditionSoundPlay() {
         randomPlay(getExpeditionSoundFiles());
@@ -120,7 +120,7 @@ public final class Sound {
 
     /**
      * お風呂からあがる時に再生するサウンドを再生します
-     * 
+     *
      */
     public static void randomDockSoundPlay() {
         randomPlay(getDockSoundFiles());
@@ -128,7 +128,7 @@ public final class Sound {
 
     /**
      * 大破した時に再生するサウンドを再生します
-     * 
+     *
      */
     public static void randomBadlySoundPlay() {
         randomPlay(getBadlySoundFiles());
@@ -136,7 +136,7 @@ public final class Sound {
 
     /**
      * 遠征から帰投した時に再生するサウンドを取得します
-     * 
+     *
      * @return サウンドファイル
      */
     private static List<File> getExpeditionSoundFiles() {
@@ -149,7 +149,7 @@ public final class Sound {
 
     /**
      * お風呂からあがる時に再生するサウンドを取得します
-     * 
+     *
      * @return サウンドファイル
      */
     private static List<File> getDockSoundFiles() {
@@ -162,7 +162,7 @@ public final class Sound {
 
     /**
      * 大破した時に再生するサウンドを取得します
-     * 
+     *
      * @return サウンドファイル
      */
     private static List<File> getBadlySoundFiles() {
@@ -175,7 +175,7 @@ public final class Sound {
 
     /**
      * 音量を調節する
-     * 
+     *
      * @param control
      * @param linearScalar
      */
@@ -185,7 +185,7 @@ public final class Sound {
 
     /**
      * プレイヤースレッド
-     * 
+     *
      */
     public static class PlayerThread extends Thread {
 
@@ -202,12 +202,9 @@ public final class Sound {
         @Override
         public void run() {
             try {
-                while (true) {
-                    File file = soundfileQueue.poll();
-                    if (file != null) {
-                        play(file);
-                    }
-                    Thread.sleep(500);
+                File file = soundfileQueue.poll();
+                if (file != null) {
+                    play(file);
                 }
             } catch (Exception e) {
                 LOG.fatal("スレッドが異常終了しました", e);

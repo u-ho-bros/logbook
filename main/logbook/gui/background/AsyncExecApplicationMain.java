@@ -47,7 +47,7 @@ public final class AsyncExecApplicationMain extends Thread {
 
     /**
      * 非同期にメイン画面を更新するスレッドのコンストラクター
-     * 
+     *
      * @param main メイン画面
      */
     public AsyncExecApplicationMain(ApplicationMain main) {
@@ -60,23 +60,18 @@ public final class AsyncExecApplicationMain extends Thread {
      */
     @Override
     public void run() {
-
         try {
-            while (true) {
-                boolean update = GlobalContext.updateContext();
-                if (update) {
-                    // 保有アイテム数を更新する
-                    Display.getDefault().asyncExec(new UpdateItemCountTask(this.main));
-                    // 保有艦娘数を更新する
-                    Display.getDefault().asyncExec(new UpdateShipCountTask(this.main));
-                    // 艦隊タブを更新する
-                    Display.getDefault().asyncExec(new UpdateFleetTabTask(this.main));
-                }
-                // 遠征と入渠を更新する
-                Display.getDefault().asyncExec(new UpdateDeckNdockTask(this.main));
-
-                TimeUnit.SECONDS.sleep(1);
+            boolean update = GlobalContext.updateContext();
+            if (update) {
+                // 保有アイテム数を更新する
+                Display.getDefault().asyncExec(new UpdateItemCountTask(this.main));
+                // 保有艦娘数を更新する
+                Display.getDefault().asyncExec(new UpdateShipCountTask(this.main));
+                // 艦隊タブを更新する
+                Display.getDefault().asyncExec(new UpdateFleetTabTask(this.main));
             }
+            // 遠征と入渠を更新する
+            Display.getDefault().asyncExec(new UpdateDeckNdockTask(this.main));
         } catch (Exception e) {
             LOG.fatal("スレッドが異常終了しました", e);
             throw new RuntimeException(e);
@@ -85,7 +80,7 @@ public final class AsyncExecApplicationMain extends Thread {
 
     /**
      * 2つの日付から残り時間を計算する
-     * 
+     *
      * @param date1
      * @param date2
      * @return
@@ -232,7 +227,7 @@ public final class AsyncExecApplicationMain extends Thread {
 
         /**
          * 遠征を更新する
-         * 
+         *
          * @param now
          * @param notice
          * @return
@@ -303,7 +298,7 @@ public final class AsyncExecApplicationMain extends Thread {
 
         /**
          * 入渠を更新する
-         * 
+         *
          * @param now
          * @param notice
          * @return

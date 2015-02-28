@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * スレッドを管理します
@@ -14,15 +16,31 @@ import java.util.Map;
  */
 public final class ThreadManager {
 
+    /** Executor */
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(4);
+
     private static List<Thread> threads = new ArrayList<Thread>();
 
     private static Map<Thread, ExceptionHandler> handlermap = new HashMap<Thread, ExceptionHandler>();
 
     /**
+     * アプリケーションで共有するExecutorService
+     * <p>
+     * 長時間実行する必要のあるスレッドを登録する場合、割り込みされたかを検知して適切に終了するようにしてください。
+     * </p>
+     *
+     * @return ExecutorService
+     */
+    public static ScheduledExecutorService getExecutorService() {
+        return EXECUTOR;
+    }
+
+    /**
      * スレッドを管理下に置きます
-     * 
+     *
      * @param thread
      */
+    @Deprecated
     public static void regist(Thread thread) {
         threads.add(thread);
     }
@@ -30,6 +48,7 @@ public final class ThreadManager {
     /**
      * 管理しているスレッドを開始します
      */
+    @Deprecated
     public static void start() {
         for (Thread thread : threads) {
             if (!thread.isAlive()) {
@@ -48,13 +67,14 @@ public final class ThreadManager {
      * 管理しているスレッドを取得します
      * @return
      */
+    @Deprecated
     static List<Thread> getThreads() {
         return Collections.unmodifiableList(threads);
     }
 
     /**
      * 例外ハンドラを取得します
-     * 
+     *
      * @param thread
      * @return
      */
