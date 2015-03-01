@@ -1,6 +1,5 @@
 package logbook.gui;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,12 +108,8 @@ public final class ConfigDialog extends Dialog {
         TreeItem proxy = new TreeItem(systemroot, SWT.NONE);
         proxy.setText("プロキシ");
         proxy.setData("proxy");
-        TreeItem development = new TreeItem(tree, SWT.NONE);
-        development.setText("Development");
-        development.setData("development");
 
         systemroot.setExpanded(true);
-        development.setExpanded(true);
 
         this.scrolledComposite = new ScrolledComposite(sashForm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         this.scrolledComposite.setExpandHorizontal(true);
@@ -562,27 +557,6 @@ public final class ConfigDialog extends Dialog {
         gdProxyPortSpinner.widthHint = 55;
         proxyPortSpinner.setLayoutData(gdProxyPortSpinner);
 
-        // Development タブ
-        Composite compositeDevelopment = new Composite(this.composite, SWT.NONE);
-        this.compositeMap.put("development", compositeDevelopment);
-        compositeDevelopment.setLayout(new GridLayout(2, false));
-
-        new Label(compositeDevelopment, SWT.NONE);
-        final Button btnJson = new Button(compositeDevelopment, SWT.CHECK);
-        btnJson.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
-        btnJson.setText("JSONを保存する");
-        btnJson.setSelection(AppConfig.get().isStoreJson());
-
-        Label lblJson = new Label(compositeDevelopment, SWT.NONE);
-        lblJson.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblJson.setText("JSON保存先");
-
-        final Text jsonpath = new Text(compositeDevelopment, SWT.BORDER);
-        GridData gdJsonpath = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdJsonpath.widthHint = 120;
-        jsonpath.setLayoutData(gdJsonpath);
-        jsonpath.setText(AppConfig.get().getStoreJsonPath());
-
         Composite commandComposite = new Composite(this.shell, SWT.NONE);
         commandComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         GridLayout glCommandComposite = new GridLayout(2, false);
@@ -679,10 +653,6 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setUseProxy(useProxyButton.getSelection());
                 AppConfig.get().setProxyHost(proxyHostText.getText());
                 AppConfig.get().setProxyPort(proxyPortSpinner.getSelection());
-
-                // development
-                AppConfig.get().setStoreJson(btnJson.getSelection());
-                AppConfig.get().setStoreJsonPath(new File(jsonpath.getText()).getAbsolutePath());
                 try {
                     AppConfig.store();
                 } catch (IOException ex) {
