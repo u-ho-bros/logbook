@@ -5,17 +5,22 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * イベントをリスナーに送信するクラスです
  *
  */
 public final class EventSender {
 
+    private static final Logger LOG = LogManager.getLogger(EventSender.class);
+
     private final Map<DataType, List<EventListener>> listenerMap = new EnumMap<>(DataType.class);
 
     /**
      * リスナーを追加します
-     * 
+     *
      * @param listener
      */
     public void addEventListener(EventListener listener) {
@@ -35,7 +40,7 @@ public final class EventSender {
 
     /**
      * リスナーを除去します
-     * 
+     *
      * @param listener
      */
     public void removeEventListener(EventListener listener) {
@@ -54,8 +59,8 @@ public final class EventSender {
 
     /**
      * イベントを送信します(同期)
-     * 
-     * @param type 
+     *
+     * @param type
      * @param data
      */
     public void syncSendEvent(DataType type, Data data) {
@@ -63,7 +68,11 @@ public final class EventSender {
         if (listeners != null) {
             synchronized (listeners) {
                 for (EventListener listener : listeners) {
-                    listener.update(type, data);
+                    try {
+                        listener.update(type, data);
+                    } catch (Exception e) {
+                        this.handle(listener, data, e);
+                    }
                 }
             }
         }
@@ -71,15 +80,33 @@ public final class EventSender {
 
     /**
      * リスナーのターゲット注釈からデータの種類を取得します
-     * 
+     *
      * @param listener
      * @return
      */
     private DataType[] getTypes(EventListener listener) {
         EventTarget target = listener.getClass().getAnnotation(EventTarget.class);
         if (target == null) {
-            throw new IllegalArgumentException("リスナーにEventTarget注釈がありません");
+            // 注釈がない場合全て
+            return DataType.values();
         }
         return target.value();
+    }
+
+    /**
+     * エラーハンドラ
+     *
+     * @param listener
+     * @param data
+     * @param e
+     */
+    private void handle(EventListener listener, Data data, Exception e) {
+        if (listener instanceof ScriptEventAdapter) {
+            // ユーザースクリプト
+            LOG.warn(((ScriptEventAdapter) listener).getPath() + " でキャッチされない例外が発生しました", e);
+        } else {
+            LOG.warn(listener.getClass() + " でキャッチされない例外が発生しました", e);
+        }
+        LOG.warn(data);
     }
 }
