@@ -1,6 +1,11 @@
 package logbook.gui;
 
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.RGB;
@@ -399,10 +406,37 @@ public final class ConfigDialog extends Dialog {
         }
         new Label(compositeCapture, SWT.NONE);
 
-        final Button createDateFolder = new Button(compositeCapture, SWT.CHECK);
-        createDateFolder.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
-        createDateFolder.setText("日付のフォルダを作成する");
-        createDateFolder.setSelection(AppConfig.get().isCreateDateFolder());
+        Label label6 = new Label(compositeCapture, SWT.NONE);
+        label6.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        label6.setText("書式");
+
+        final Text imageNameFormat = new Text(compositeCapture, SWT.BORDER);
+        GridData gdImageNameFormat = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+        gdImageNameFormat.widthHint = 250;
+        imageNameFormat.setLayoutData(gdImageNameFormat);
+        imageNameFormat.setText(AppConfig.get().getImageNameFormat());
+
+        Label label11 = new Label(compositeCapture, SWT.NONE);
+        label11.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        label11.setText("プレビュー");
+
+        final Text imageNamePrev = new Text(compositeCapture, SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+        GridData gdImageNamePrev = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        gdImageNamePrev.heightHint = imageNamePrev.getLineHeight() * 3;
+        gdImageNamePrev.widthHint = 250;
+        imageNamePrev.setLayoutData(gdImageNamePrev);
+        imageNamePrev.setText(prevImageNameFormat(AppConfig.get().getImageNameFormat()));
+
+        imageNameFormat.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                imageNamePrev.setText(prevImageNameFormat(imageNameFormat.getText()));
+            }
+        });
+
+        Label label12 = new Label(compositeCapture, SWT.NONE);
+        label12.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
+        label12.setText("英字を書式に含めるには ' (シングルクォーテーション)で囲みます");
 
         // 資材チャート タブ
         Composite compositeChart = new Composite(this.composite, SWT.NONE);
@@ -643,7 +677,7 @@ public final class ConfigDialog extends Dialog {
                 // capture
                 AppConfig.get().setCapturePath(captureDir.getText());
                 AppConfig.get().setImageFormat(imageformatCombo.getItem(imageformatCombo.getSelectionIndex()));
-                AppConfig.get().setCreateDateFolder(createDateFolder.getSelection());
+                AppConfig.get().setImageNameFormat(imageNameFormat.getText());
                 // チャート
                 AppConfig.get().setFuelColor(fuel.getForeground().getRGB());
                 AppConfig.get().setAmmoColor(ammo.getForeground().getRGB());
@@ -679,6 +713,31 @@ public final class ConfigDialog extends Dialog {
         sashForm.setWeights(new int[] { 2, 5 });
         this.scrolledComposite.setContent(this.composite);
         this.scrolledComposite.setMinSize(this.composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+    }
+
+    /**
+     * 画像ファイル名のプレビュー
+     *
+     * @param format
+     * @return
+     */
+    private static String prevImageNameFormat(String format) {
+        try {
+            Calendar calendar = Calendar.getInstance();
+            if (format.isEmpty()) {
+                throw new IllegalArgumentException();
+            }
+            String prev = new SimpleDateFormat(format).format(calendar.getTime())
+                    + "." + AppConfig.get().getImageFormat();
+            try {
+                Path path = Paths.get(AppConfig.get().getCapturePath(), prev);
+                return path.normalize().toString();
+            } catch (InvalidPathException ex) {
+                return "ファイル名に無効な文字が含まれています :" + ex.getReason();
+            }
+        } catch (IllegalArgumentException ex) {
+            return "日付書式が無効です :" + ex.getMessage();
+        }
     }
 
     /**

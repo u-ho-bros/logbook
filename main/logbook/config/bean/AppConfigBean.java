@@ -81,8 +81,8 @@ public final class AppConfigBean {
     /** 画面キャプチャ-フォーマット */
     private String imageFormat = "jpg";
 
-    /** 画面キャプチャ-日付のフォルダを作成 */
-    private boolean createDateFolder = true;
+    /** 画面キャプチャ-画像ファイル名書式 */
+    private String imageNameFormat = "yyyy-MM-dd/yyyy-MM-dd HH-mm-ss.SSS";
 
     /** ウインドウ位置X */
     private int locationX = -1;
@@ -516,19 +516,19 @@ public final class AppConfigBean {
     }
 
     /**
-     * 画面キャプチャ-日付のフォルダを作成を取得します。
-     * @return 画面キャプチャ-日付のフォルダを作成
+     * 画面キャプチャ-画像ファイル名書式を取得します。
+     * @return 画面キャプチャ-画像ファイル名書式
      */
-    public boolean isCreateDateFolder() {
-        return this.createDateFolder;
+    public String getImageNameFormat() {
+        return this.imageNameFormat;
     }
 
     /**
-     * 画面キャプチャ-日付のフォルダを作成を設定します。
-     * @param createDateFolder 画面キャプチャ-日付のフォルダを作成
+     * 画面キャプチャ-画像ファイル名書式を設定します。
+     * @param imageNameFormat 画面キャプチャ-画像ファイル名書式
      */
-    public void setCreateDateFolder(boolean createDateFolder) {
-        this.createDateFolder = createDateFolder;
+    public void setImageNameFormat(String imageNameFormat) {
+        this.imageNameFormat = imageNameFormat;
     }
 
     /**

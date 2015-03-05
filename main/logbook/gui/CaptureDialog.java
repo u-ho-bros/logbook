@@ -3,6 +3,8 @@ package logbook.gui;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,7 +22,6 @@ import logbook.constants.AppConstants;
 import logbook.gui.logic.LayoutLogic;
 import logbook.util.AwtUtils;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -174,7 +175,7 @@ public final class CaptureDialog extends Dialog {
 
     /**
      * キャプチャボタンの文字を取得します
-     * 
+     *
      * @param isrunning
      * @param interval
      * @return
@@ -290,9 +291,7 @@ public final class CaptureDialog extends Dialog {
         /** Jpeg品質 */
         private static final float QUALITY = 0.9f;
         /** 日付フォーマット(ファイル名) */
-        private final SimpleDateFormat fileNameFormat = new SimpleDateFormat(AppConstants.DATE_LONG_FORMAT);
-        /** 日付フォーマット(ディレクトリ名) */
-        private final SimpleDateFormat dirNameFormat = new SimpleDateFormat(AppConstants.DATE_DAYS_FORMAT);
+        private SimpleDateFormat fileNameFormat;
         /** キャプチャ範囲 */
         private final Rectangle rectangle;
         /** トリム範囲 */
@@ -300,6 +299,11 @@ public final class CaptureDialog extends Dialog {
 
         public CaptureTask(Rectangle rectangle) {
             this.rectangle = rectangle;
+            try {
+                this.fileNameFormat = new SimpleDateFormat(AppConfig.get().getImageNameFormat());
+            } catch (IllegalArgumentException e) {
+                this.fileNameFormat = new SimpleDateFormat(AppConstants.DATE_LONG_FORMAT);
+            }
         }
 
         @Override
@@ -308,16 +312,11 @@ public final class CaptureDialog extends Dialog {
                 // 時刻からファイル名を作成
                 Date now = Calendar.getInstance().getTime();
 
-                String dir = null;
-                if (AppConfig.get().isCreateDateFolder()) {
-                    dir = FilenameUtils.concat(AppConfig.get().getCapturePath(), this.dirNameFormat.format(now));
-                } else {
-                    dir = AppConfig.get().getCapturePath();
-                }
+                String dir = AppConfig.get().getCapturePath();
+                String name = this.fileNameFormat.format(now) + "." + AppConfig.get().getImageFormat();
+                Path path = Paths.get(dir, name);
 
-                String fname = FilenameUtils.concat(dir, this.fileNameFormat.format(now) + "."
-                        + AppConfig.get().getImageFormat());
-                File file = new File(fname);
+                File file = path.toFile();
 
                 if (file.exists()) {
                     if (file.isDirectory()) {
