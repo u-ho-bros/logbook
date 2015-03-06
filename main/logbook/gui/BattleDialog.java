@@ -40,16 +40,15 @@ public final class BattleDialog extends Dialog {
 
     private Shell shell;
 
-    private final String id;
+    private final int id;
 
     /**
      * Create the dialog.
      * @param parent
      * @param id
      */
-    public BattleDialog(Shell parent, String id) {
+    public BattleDialog(Shell parent, int id) {
         super(parent, SWT.CLOSE | SWT.TITLE | SWT.MIN | SWT.RESIZE);
-
         this.id = id;
     }
 
@@ -81,8 +80,7 @@ public final class BattleDialog extends Dialog {
         String fontName = fontData.getName();
         int size = fontData.getHeight();
 
-        int id = Integer.valueOf(this.id) - 1;
-        BattleResultDto result = GlobalContext.getBattleResultList().get(id);
+        BattleResultDto result = GlobalContext.getBattleResultList().get(this.id);
         BattleDto battle = result.getBattleDto();
 
         // タイトル
@@ -281,8 +279,7 @@ public final class BattleDialog extends Dialog {
         // 文書を用意する
         // freemarker使いたい
 
-        int id = Integer.valueOf(this.id) - 1;
-        BattleResultDto result = GlobalContext.getBattleResultList().get(id);
+        BattleResultDto result = GlobalContext.getBattleResultList().get(this.id);
         BattleDto battle = result.getBattleDto();
 
         String time = new SimpleDateFormat(AppConstants.DATE_FORMAT).format(result.getBattleDate());

@@ -33,7 +33,8 @@ public final class DropReportTable extends AbstractTableDialog {
             public void mouseDoubleClick(MouseEvent e) {
                 TableItem[] items = DropReportTable.this.table.getSelection();
                 for (TableItem tableItem : items) {
-                    new BattleDialog(DropReportTable.this.shell, tableItem.getText(0)).open();
+                    int id = Integer.parseInt(tableItem.getText(0)) - 1;
+                    new BattleDialog(DropReportTable.this.shell, id).open();
                 }
             }
         });
