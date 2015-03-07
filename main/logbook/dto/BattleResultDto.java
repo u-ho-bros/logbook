@@ -79,7 +79,7 @@ public final class BattleResultDto extends AbstractDto {
                 this.dropType = object.getJsonObject("api_get_ship").getString("api_ship_type");
                 this.dropName = object.getJsonObject("api_get_ship").getString("api_ship_name");
             } else {
-                String name = UseItem.get(object.getJsonObject("api_get_ship").getInt("api_useitem_id"));
+                String name = UseItem.get(object.getJsonObject("api_get_useitem").getInt("api_useitem_id"));
                 this.dropType = "アイテム";
                 this.dropName = StringUtils.defaultString(name);
             }
