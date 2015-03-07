@@ -5,6 +5,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -46,7 +47,7 @@ public final class ScriptLoader implements Closeable {
      */
     @CheckForNull
     public EventListener getEventListener(Path script) throws IOException, ScriptException {
-        try (BufferedReader reader = Files.newBufferedReader(script)) {
+        try (BufferedReader reader = Files.newBufferedReader(script, Charset.forName("UTF-8"))) {
             // 拡張子からScriptEngineを取得
             String ext = FilenameUtils.getExtension(script.toString());
             ScriptEngine engine = this.manager.getEngineByExtension(ext);
