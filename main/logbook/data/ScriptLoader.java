@@ -3,17 +3,23 @@ package logbook.data;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.CheckForNull;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
+import logbook.config.AppConfig;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -71,7 +77,20 @@ public final class ScriptLoader implements Closeable {
      * @return ライブラリ
      */
     public URL[] getLibraries() {
-        return new URL[0];
+        String[] engines = AppConfig.get().getScriptEngines();
+        List<URL> libs = new ArrayList<>();
+        for (String engine : engines) {
+            Path path = Paths.get(engine);
+            if (Files.isReadable(path)) {
+                try {
+                    libs.add(path.toUri().toURL());
+                } catch (MalformedURLException e) {
+                    // ここに入るパターンはないはず
+                    e.printStackTrace();
+                }
+            }
+        }
+        return libs.toArray(new URL[libs.size()]);
     }
 
     @Override

@@ -28,6 +28,8 @@ import logbook.config.KdockConfig;
 import logbook.constants.AppConstants;
 import logbook.data.Data;
 import logbook.data.DataQueue;
+import logbook.data.EventSender;
+import logbook.data.event.CallScript;
 import logbook.dto.BattleDto;
 import logbook.dto.BattleResultDto;
 import logbook.dto.CreateItemDto;
@@ -58,6 +60,9 @@ import org.apache.logging.log4j.Logger;
 public final class GlobalContext {
     /** ロガー */
     private static final Logger LOG = LogManager.getLogger(GlobalContext.class);
+
+    /** コンテキスト */
+    private static final GlobalContext CONTEXT = new GlobalContext();
 
     /** 装備Map */
     private static Map<Long, ItemDto> itemMap = new ConcurrentSkipListMap<Long, ItemDto>();
@@ -138,6 +143,16 @@ public final class GlobalContext {
 
     /** 連合艦隊 */
     private static boolean combined;
+
+    /** イベント送信 */
+    private final EventSender sender = new EventSender();
+
+    /**
+     * コンストラクタ
+     */
+    public GlobalContext() {
+        this.sender.addEventListener(new CallScript());
+    }
 
     /**
      * @return 装備Map
@@ -333,6 +348,9 @@ public final class GlobalContext {
         Data data;
         while ((data = DataQueue.poll()) != null) {
             update = true;
+
+            CONTEXT.sender.syncSendEvent(data.getDataType(), data);
+
             switch (data.getDataType()) {
             // 補給
             case CHARGE:

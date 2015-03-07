@@ -101,12 +101,7 @@ public final class EventSender {
      * @param e
      */
     private void handle(EventListener listener, Data data, Exception e) {
-        if (listener instanceof ScriptEventAdapter) {
-            // ユーザースクリプト
-            LOG.warn(((ScriptEventAdapter) listener).getPath() + " でキャッチされない例外が発生しました", e);
-        } else {
-            LOG.warn(listener.getClass() + " でキャッチされない例外が発生しました", e);
-        }
+        LOG.warn(listener.getClass() + " でキャッチされない例外が発生しました", e);
         LOG.warn(data);
     }
 }

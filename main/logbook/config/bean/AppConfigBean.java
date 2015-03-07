@@ -147,6 +147,15 @@ public final class AppConfigBean {
     /** ウインドウ位置とサイズ(キー:java.lang.Class.getName()) */
     private Map<String, WindowLocationBean> windowLocationMap = new HashMap<>();
 
+    /** ユーザースクリプトを使用する */
+    private boolean useUserScript;
+
+    /** ユーザースクリプトパス */
+    private String[] userScripts;
+
+    /** スクリプトエンジンパス */
+    private String[] scriptEngines;
+
     /**
      * ポート番号を取得します。
      * @return ポート番号
@@ -881,6 +890,54 @@ public final class AppConfigBean {
      */
     public void setWindowLocationMap(Map<String, WindowLocationBean> windowLocationMap) {
         this.windowLocationMap = windowLocationMap;
+    }
+
+    /**
+     * ユーザースクリプトを使用するを取得します。
+     * @return ユーザースクリプトを使用する
+     */
+    public boolean isUseUserScript() {
+        return this.useUserScript;
+    }
+
+    /**
+     * ユーザースクリプトを使用するを設定します。
+     * @param useUserScript ユーザースクリプトを使用する
+     */
+    public void setUseUserScript(boolean useUserScript) {
+        this.useUserScript = useUserScript;
+    }
+
+    /**
+     * ユーザースクリプトパスを取得します。
+     * @return ユーザースクリプトパス
+     */
+    public String[] getUserScripts() {
+        return this.userScripts;
+    }
+
+    /**
+     * ユーザースクリプトパスを設定します。
+     * @param userScripts ユーザースクリプトパス
+     */
+    public void setUserScripts(String[] userScripts) {
+        this.userScripts = userScripts;
+    }
+
+    /**
+     * スクリプトエンジンパスを取得します。
+     * @return スクリプトエンジンパス
+     */
+    public String[] getScriptEngines() {
+        return this.scriptEngines;
+    }
+
+    /**
+     * スクリプトエンジンパスを設定します。
+     * @param scriptEngines スクリプトエンジンパス
+     */
+    public void setScriptEngines(String[] scriptEngines) {
+        this.scriptEngines = scriptEngines;
     }
 
 }

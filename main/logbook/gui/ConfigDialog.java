@@ -1,10 +1,12 @@
 package logbook.gui;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +39,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
@@ -115,8 +119,15 @@ public final class ConfigDialog extends Dialog {
         TreeItem proxy = new TreeItem(systemroot, SWT.NONE);
         proxy.setText("プロキシ");
         proxy.setData("proxy");
+        TreeItem extensionroot = new TreeItem(tree, SWT.NONE);
+        extensionroot.setText("拡張");
+        extensionroot.setData("extension");
+        TreeItem userscript = new TreeItem(extensionroot, SWT.NONE);
+        userscript.setText("ユーザースクリプト");
+        userscript.setData("userscript");
 
         systemroot.setExpanded(true);
+        extensionroot.setExpanded(true);
 
         this.scrolledComposite = new ScrolledComposite(sashForm, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         this.scrolledComposite.setExpandHorizontal(true);
@@ -591,6 +602,118 @@ public final class ConfigDialog extends Dialog {
         gdProxyPortSpinner.widthHint = 55;
         proxyPortSpinner.setLayoutData(gdProxyPortSpinner);
 
+        // 拡張
+        Composite compositeExtension = new Composite(this.composite, SWT.NONE);
+        this.compositeMap.put("extension", compositeExtension);
+        compositeExtension.setLayout(new GridLayout(1, false));
+
+        // ユーザースクリプト
+        Composite userScriptComposite = new Composite(this.composite, SWT.NONE);
+        this.compositeMap.put("userscript", userScriptComposite);
+        userScriptComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        userScriptComposite.setLayout(new GridLayout(1, false));
+
+        final Button useScript = new Button(userScriptComposite, SWT.CHECK);
+        useScript.setText("ユーザースクリプトを使用する");
+        useScript.setSelection(AppConfig.get().isUseUserScript());
+
+        Group scriptgroup = new Group(userScriptComposite, SWT.NONE);
+        scriptgroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        scriptgroup.setText("ユーザースクリプト*");
+        scriptgroup.setLayout(new GridLayout(2, false));
+
+        final List scriptList = new List(scriptgroup, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+        GridData gdScriptList = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        gdScriptList.heightHint = 60;
+        scriptList.setLayoutData(gdScriptList);
+        if (AppConfig.get().getUserScripts() != null) {
+            scriptList.setItems(AppConfig.get().getUserScripts());
+        }
+
+        Button addScript = new Button(scriptgroup, SWT.NONE);
+        addScript.setText("追加");
+        addScript.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(ConfigDialog.this.shell, SWT.OPEN | SWT.MULTI);
+                dialog.open();
+                String dir = dialog.getFilterPath();
+                String[] files = dialog.getFileNames();
+
+                if ((dir != null) && !dir.isEmpty()) {
+                    for (String file : files) {
+                        Path path = Paths.get(dir, file);
+                        if (Files.isReadable(path)) {
+                            String script = path.toString();
+                            if (Arrays.asList(scriptList.getItems()).indexOf(script) == -1) {
+                                scriptList.add(script);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        Button removeScript = new Button(scriptgroup, SWT.NONE);
+        removeScript.setText("除去");
+        removeScript.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                scriptList.remove(scriptList.getSelectionIndices());
+            }
+        });
+
+        Label lblNewLabel = new Label(scriptgroup, SWT.NONE);
+        lblNewLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        lblNewLabel.setText("信頼出来ないユーザースクリプトはコンピュータに損害を与える恐れがあります");
+
+        Group enginegroup = new Group(userScriptComposite, SWT.NONE);
+        enginegroup.setLayout(new GridLayout(2, false));
+        enginegroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        enginegroup.setText("スクリプトエンジン*");
+
+        final List engineList = new List(enginegroup, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+        GridData gdEngineList = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        gdEngineList.heightHint = 60;
+        engineList.setLayoutData(gdEngineList);
+        if (AppConfig.get().getScriptEngines() != null) {
+            engineList.setItems(AppConfig.get().getScriptEngines());
+        }
+
+        Button addEngine = new Button(enginegroup, SWT.NONE);
+        addEngine.setText("追加");
+        addEngine.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(ConfigDialog.this.shell, SWT.OPEN | SWT.MULTI);
+                dialog.setFilterExtensions(new String[] { "*.jar" });
+                dialog.open();
+                String dir = dialog.getFilterPath();
+                String[] files = dialog.getFileNames();
+
+                if ((dir != null) && !dir.isEmpty()) {
+                    for (String file : files) {
+                        Path path = Paths.get(dir, file);
+                        if (Files.isReadable(path)) {
+                            String script = path.toString();
+                            if (Arrays.asList(engineList.getItems()).indexOf(script) == -1) {
+                                engineList.add(script);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        Button removeEngine = new Button(enginegroup, SWT.NONE);
+        removeEngine.setText("除去");
+        removeEngine.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                engineList.remove(engineList.getSelectionIndices());
+            }
+        });
+
         Composite commandComposite = new Composite(this.shell, SWT.NONE);
         commandComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         GridLayout glCommandComposite = new GridLayout(2, false);
@@ -687,6 +810,10 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setUseProxy(useProxyButton.getSelection());
                 AppConfig.get().setProxyHost(proxyHostText.getText());
                 AppConfig.get().setProxyPort(proxyPortSpinner.getSelection());
+                // ユーザースクリプト
+                AppConfig.get().setUseUserScript(useScript.getSelection());
+                AppConfig.get().setUserScripts(scriptList.getItems());
+                AppConfig.get().setScriptEngines(engineList.getItems());
                 try {
                     AppConfig.store();
                 } catch (IOException ex) {
