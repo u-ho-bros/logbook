@@ -40,7 +40,12 @@ public final class CallScript implements EventListener {
                 if (scripts != null) {
                     for (String script : scripts) {
                         try {
-                            this.listeners.add(this.loader.getEventListener(Paths.get(script)));
+                            EventListener listener = this.loader.getEventListener(Paths.get(script));
+                            if (listener != null) {
+                                this.listeners.add(listener);
+                            } else {
+                                LOG.warn("ユーザースクリプト " + script + " にupdate(DataType, Data)関数が見つかりません");
+                            }
                         } catch (Exception e) {
                             LOG.warn("ユーザースクリプト " + script + " の初期化で例外が発生しました", e);
                         }
