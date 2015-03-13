@@ -14,6 +14,7 @@ import logbook.data.Data;
 import logbook.data.DataQueue;
 import logbook.data.DataType;
 import logbook.data.UndefinedData;
+import logbook.thread.ThreadManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.client.HttpClient;
@@ -104,17 +105,9 @@ public final class ReverseProxyServlet extends ProxyServlet {
             byte[] postField = (byte[]) request.getAttribute(Filter.REQUEST_BODY);
             ByteArrayOutputStream stream = (ByteArrayOutputStream) request.getAttribute(Filter.RESPONSE_BODY);
             if (stream != null) {
-                // キャプチャしたバイト配列は何のデータかを決定する
-                Data data = new UndefinedData(request.getRequestURI(), postField, stream.toByteArray()).toDefinedData();
-                if (data.getDataType() != DataType.UNDEFINED) {
-                    // 定義済みのデータの場合にキューに追加する
-                    DataQueue.add(data);
-
-                    // サーバー名が不明の場合、サーバー名をセットする
-                    if (!Filter.isServerDetected()) {
-                        Filter.setServerName(request.getServerName());
-                    }
-                }
+                UndefinedData data = new UndefinedData(request.getRequestURI(), postField, stream.toByteArray());
+                Runnable task = new ParseDataTask(data, request.getServerName());
+                ThreadManager.getExecutorService().submit(task);
             }
         }
         super.onResponseSuccess(request, response, proxyResponse);
@@ -167,6 +160,39 @@ public final class ReverseProxyServlet extends ProxyServlet {
                     QUERY_FIELD.set(proxyRequest, queryString);
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    /**
+     * パースを別スレッドで行うためのタスク
+     */
+    private static final class ParseDataTask implements Runnable {
+        /** jsonのパース前のデータ */
+        private final UndefinedData undefined;
+        /** サーバー名 */
+        private final String serverName;
+
+        /**
+         * コンストラクター
+         */
+        public ParseDataTask(UndefinedData undefined, String serverName) {
+            this.undefined = undefined;
+            this.serverName = serverName;
+        }
+
+        @Override
+        public void run() {
+            Data data = this.undefined.toDefinedData();
+
+            if (data.getDataType() != DataType.UNDEFINED) {
+                // 定義済みのデータの場合にキューに追加する
+                DataQueue.add(data);
+
+                // サーバー名が不明の場合、サーバー名をセットする
+                if (!Filter.isServerDetected()) {
+                    Filter.setServerName(this.serverName);
                 }
             }
         }
