@@ -101,7 +101,7 @@ public final class TimerSettingDialog extends Dialog {
                 // Task
                 Runnable task = new AlertTask(TimerSettingDialog.this.shell, TimerSettingDialog.this.getText());
                 // Delay
-                long delay = System.currentTimeMillis() - TimerSettingDialog.this.time.getTime();
+                long delay = TimerSettingDialog.this.time.getTime() - System.currentTimeMillis();
                 ThreadManager.getExecutorService()
                         .schedule(task, delay, TimeUnit.MILLISECONDS);
 
