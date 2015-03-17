@@ -4,9 +4,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.CheckForNull;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
@@ -148,7 +150,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * コンストラクター
-     * 
+     *
      * @param object JSON Object
      */
     public ShipDto(JsonObject object) {
@@ -213,7 +215,9 @@ public final class ShipDto extends AbstractDto {
         }
         // 疲労が抜ける時間を計算する
         if (this.cond < 49) {
-            this.time.add(Calendar.MINUTE, Math.max(49 - (int) this.cond, 3));
+            float compare = 49 - this.cond;
+            int addMinutes = (int) (Math.ceil(compare / 3f) * 3);
+            this.time.add(Calendar.MINUTE, addMinutes);
         }
         this.isCarrier = "水上機母艦".equals(this.type) || "軽空母".equals(this.type) || "正規空母".equals(this.type)
                 || "装甲空母".equals(this.type);
@@ -242,7 +246,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * 艦隊IDを設定する
-     * 
+     *
      * @param fleetid 艦隊ID
      */
     public void setFleetid(String fleetid) {
@@ -608,11 +612,22 @@ public final class ShipDto extends AbstractDto {
     /**
      * @return 疲労が抜けるまでの時間
      */
-    public String getCondClearDate() {
+    public String getCondClearDateString() {
         if (this.cond < 49) {
             return new SimpleDateFormat("HH:mm").format(this.time.getTime());
         }
         return "";
+    }
+
+    /**
+     * @return 疲労が抜けるまでの時間
+     */
+    @CheckForNull
+    public Date getCondClearDate() {
+        if (this.cond < 49) {
+            return this.time.getTime();
+        }
+        return null;
     }
 
     /**
@@ -657,7 +672,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * 装備で加算された命中
-     * 
+     *
      * @return 装備の命中
      */
     public long getAccuracy() {
@@ -676,7 +691,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * 砲撃戦火力
-     * 
+     *
      * @return 砲撃戦火力
      */
     public long getHougekiPower() {
@@ -702,7 +717,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * 雷撃戦火力
-     * 
+     *
      * @return 雷撃戦火力
      */
     public long getRaigekiPower() {
@@ -711,7 +726,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * 対潜火力
-     * 
+     *
      * @return 対潜火力
      */
     public long getTaisenPower() {
@@ -734,7 +749,7 @@ public final class ShipDto extends AbstractDto {
 
     /**
      * 夜戦火力
-     * 
+     *
      * @return 夜戦火力
      */
     public long getYasenPower() {

@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.CheckForNull;
@@ -16,6 +17,7 @@ import logbook.dto.DockDto;
 import logbook.dto.ItemDto;
 import logbook.dto.ShipDto;
 import logbook.gui.ApplicationMain;
+import logbook.gui.TimerSettingDialog;
 import logbook.gui.logic.Sound;
 import logbook.internal.EvaluateExp;
 import logbook.internal.SeaExp;
@@ -27,10 +29,13 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -86,7 +91,9 @@ public class FleetComposite extends Composite {
     /** コンディション最小値(メッセージ表示用) */
     private long cond;
     /** 疲労回復時間(メッセージ表示用) */
-    private String clearDate;
+    private String clearDateString;
+    /** 疲労回復時間 */
+    private Date clearDate;
     /** 大破している */
     private boolean badlyDamage;
 
@@ -166,6 +173,25 @@ public class FleetComposite extends Composite {
         this.message.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         this.message.setWordWrap(true);
         this.message.setBackground(this.getBackground());
+        this.message.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent event) {
+                try {
+                    int offset = FleetComposite.this.message.getOffsetAtLocation(new Point(event.x, event.y));
+                    StyleRange style = FleetComposite.this.message.getStyleRangeAtOffset(offset);
+                    if ((style != null) && (style.data instanceof Date)) {
+
+                        TimerSettingDialog dialog = new TimerSettingDialog(FleetComposite.this.getShell());
+                        dialog.setTime((Date) style.data);
+                        dialog.setMessage(MessageFormat.format("「{0}」の疲労が回復しました", FleetComposite.this.dock.getName()));
+                        dialog.open();
+                    }
+                } catch (IllegalArgumentException e) {
+                    // no character under event.x, event.y
+                }
+
+            }
+        });
 
         this.fleetGroup.layout();
     }
@@ -267,7 +293,7 @@ public class FleetComposite extends Composite {
 
     /**
      * 艦隊を更新します
-     * 
+     *
      * @param dock
      */
     public void updateFleet(DockDto dock) {
@@ -282,6 +308,7 @@ public class FleetComposite extends Composite {
         this.state.set(WARN, false);
         this.state.set(FATAL, false);
         this.cond = 49;
+        this.clearDateString = null;
         this.clearDate = null;
         this.badlyDamage = false;
         this.message.setText("");
@@ -349,6 +376,7 @@ public class FleetComposite extends Composite {
             // 疲労している艦娘がいる場合メッセージを表示
             if (this.cond > cond) {
                 this.cond = cond;
+                this.clearDateString = ship.getCondClearDateString();
                 this.clearDate = ship.getCondClearDate();
             }
 
@@ -591,8 +619,13 @@ public class FleetComposite extends Composite {
             style.foreground = SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN);
             this.addStyledText(this.message, AppConstants.MESSAGE_GOOD, style);
         }
-        if (this.clearDate != null) {
-            this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_COND, this.clearDate), null);
+        if (this.clearDateString != null) {
+            StyleRange style = new StyleRange();
+            style.data = this.clearDate;
+            style.underline = true;
+            style.underlineStyle = SWT.UNDERLINE_LINK;
+            this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_COND, this.clearDateString),
+                    style);
         }
         // 制空
         this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_SEIKU, seiku), null);
@@ -688,7 +721,7 @@ public class FleetComposite extends Composite {
 
     /**
      * スタイル付きテキストを設定します
-     * 
+     *
      * @param text StyledText
      * @param str 文字
      * @param style スタイル
@@ -715,7 +748,7 @@ public class FleetComposite extends Composite {
 
     /**
      * あと何回戦闘すればよいかを取得します
-     * 
+     *
      * @param ship 艦娘
      * @param isFlagship 旗艦
      * @return 回数
@@ -756,7 +789,7 @@ public class FleetComposite extends Composite {
 
     /**
      * 複数の色の中間色を取得する
-     * 
+     *
      * @param raito 割合
      * @param rgbs 色たち
      * @return 色
@@ -783,7 +816,7 @@ public class FleetComposite extends Composite {
 
     /**
      * 2つの色の中間色を取得する
-     * 
+     *
      * @param raito 割合
      * @param start 開始色
      * @param end 終了色
