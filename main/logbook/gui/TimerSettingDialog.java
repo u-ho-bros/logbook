@@ -99,7 +99,8 @@ public final class TimerSettingDialog extends Dialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 // Task
-                Runnable task = new AlertTask(TimerSettingDialog.this.shell, TimerSettingDialog.this.getText());
+                Runnable task = new AlertTask(TimerSettingDialog.this.getParent(),
+                        TimerSettingDialog.this.messageText.getText());
                 // Delay
                 long delay = TimerSettingDialog.this.time.getTime() - System.currentTimeMillis();
                 ThreadManager.getExecutorService()
@@ -161,10 +162,12 @@ public final class TimerSettingDialog extends Dialog {
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    MessageBox box = new MessageBox(AlertTask.this.shell, SWT.YES | SWT.ICON_QUESTION);
-                    box.setText("指定の時刻になりました");
-                    box.setMessage(AlertTask.this.message);
-                    box.open();
+                    if (!AlertTask.this.shell.isDisposed()) {
+                        MessageBox box = new MessageBox(AlertTask.this.shell, SWT.YES | SWT.ICON_QUESTION);
+                        box.setText("指定の時刻になりました");
+                        box.setMessage(AlertTask.this.message);
+                        box.open();
+                    }
                 }
             });
         }
