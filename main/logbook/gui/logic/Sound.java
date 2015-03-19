@@ -54,43 +54,34 @@ public final class Sound {
      * @param file ファイル
      */
     public static void play(File file) {
-        try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
-            try {
-                AudioFormat audioFormat = audioInputStream.getFormat();
+        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file)) {
+            AudioFormat audioFormat = audioInputStream.getFormat();
 
-                // データラインの情報オブジェクトを生成します
-                DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
-                // 指定されたデータライン情報に一致するラインを取得します
-                SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info);
+            // データラインの情報オブジェクトを生成します
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
+            // 指定されたデータライン情報に一致するラインを取得します
+            try (SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
+                // 指定されたオーディオ形式でラインを開きます
+                line.open(audioFormat);
+                // ラインでのデータ入出力を可能にします
+                line.start();
 
-                try {
-                    // 指定されたオーディオ形式でラインを開きます
-                    line.open(audioFormat);
-                    // ラインでのデータ入出力を可能にします
-                    line.start();
+                // ゲインのコントロールを取得します
+                FloatControl control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+                // サウンド音量を設定
+                controlByLinearScalar(control, AppConfig.get().getSoundLevel());
 
-                    // ゲインのコントロールを取得します
-                    FloatControl control = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-                    // サウンド音量を設定
-                    controlByLinearScalar(control, AppConfig.get().getSoundLevel());
-
-                    int nBytesRead = 0;
-                    byte[] abData = new byte[BUFFER_SIZE];
-                    while (nBytesRead != -1) {
-                        // オーディオストリームからデータを読み込みます
-                        nBytesRead = audioInputStream.read(abData, 0, abData.length);
-                        if (nBytesRead >= 0) {
-                            // オーディオデータをミキサーに書き込みます
-                            line.write(abData, 0, nBytesRead);
-                        }
+                int nBytesRead = 0;
+                byte[] abData = new byte[BUFFER_SIZE];
+                while (nBytesRead != -1) {
+                    // オーディオストリームからデータを読み込みます
+                    nBytesRead = audioInputStream.read(abData, 0, abData.length);
+                    if (nBytesRead >= 0) {
+                        // オーディオデータをミキサーに書き込みます
+                        line.write(abData, 0, nBytesRead);
                     }
-                    line.drain();
-                } finally {
-                    line.close();
                 }
-            } finally {
-                audioInputStream.close();
+                line.drain();
             }
         } catch (UnsupportedAudioFileException e) {
             LOG.warn("サポートされていないサウンドファイル形式です", file);

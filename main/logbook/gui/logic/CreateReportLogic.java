@@ -1,14 +1,13 @@
 package logbook.gui.logic;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,9 +40,7 @@ import logbook.dto.ShipDto;
 import logbook.dto.ShipFilterDto;
 import logbook.dto.ShipInfoDto;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -148,7 +145,7 @@ public final class CreateReportLogic {
 
     /**
      * ドロップ報告書のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getBattleResultHeader() {
@@ -189,7 +186,7 @@ public final class CreateReportLogic {
 
     /**
      * ドロップ報告書のヘッダー(保存用)
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getBattleResultStoreHeader() {
@@ -214,7 +211,7 @@ public final class CreateReportLogic {
     /**
      * ドロップ報告書の内容(保存用)
      * @param results ドロップ報告書
-     * 
+     *
      * @return 内容
      */
     public static List<String[]> getBattleResultStoreBody(List<BattleResultDto> results) {
@@ -294,7 +291,7 @@ public final class CreateReportLogic {
 
     /**
      * 建造報告書のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getCreateShipHeader() {
@@ -303,7 +300,7 @@ public final class CreateReportLogic {
 
     /**
      * 建造報告書の内容
-     * 
+     *
      * @return 内容
      */
     public static List<String[]> getCreateShipBody(List<GetShipDto> ships) {
@@ -320,7 +317,7 @@ public final class CreateReportLogic {
 
     /**
      * 開発報告書のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getCreateItemHeader() {
@@ -329,7 +326,7 @@ public final class CreateReportLogic {
 
     /**
      * 開発報告書の内容
-     * 
+     *
      * @return 内容
      */
     public static List<String[]> getCreateItemBody(List<CreateItemDto> items) {
@@ -353,7 +350,7 @@ public final class CreateReportLogic {
 
     /**
      * 所有装備一覧のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getItemListHeader() {
@@ -362,7 +359,7 @@ public final class CreateReportLogic {
 
     /**
      * 所有装備一覧の内容
-     * 
+     *
      * @return 内容
      */
     public static List<String[]> getItemListBody() {
@@ -404,7 +401,7 @@ public final class CreateReportLogic {
 
     /**
      * 所有艦娘一覧のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getShipListHeader() {
@@ -415,7 +412,7 @@ public final class CreateReportLogic {
 
     /**
      * 所有艦娘一覧の内容
-     * 
+     *
      * @param specdiff 成長余地
      * @param filter 鍵付きのみ
      * @return 内容
@@ -535,7 +532,7 @@ public final class CreateReportLogic {
 
     /**
      * 遠征結果のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getCreateMissionResultHeader() {
@@ -544,7 +541,7 @@ public final class CreateReportLogic {
 
     /**
      * 遠征結果一覧の内容
-     * 
+     *
      * @return 遠征結果
      */
     public static List<String[]> getMissionResultBody(List<MissionResultDto> resultlist) {
@@ -569,7 +566,7 @@ public final class CreateReportLogic {
 
     /**
      * 任務一覧のヘッダー
-     * 
+     *
      * @return
      */
     public static String[] getCreateQuestHeader() {
@@ -578,7 +575,7 @@ public final class CreateReportLogic {
 
     /**
      * 任務一覧の内容
-     * 
+     *
      * @return
      */
     public static List<String[]> getQuestBody() {
@@ -615,7 +612,7 @@ public final class CreateReportLogic {
 
     /**
      * 資材のヘッダー
-     * 
+     *
      * @return ヘッダー
      */
     public static String[] getMaterialHeader() {
@@ -624,7 +621,7 @@ public final class CreateReportLogic {
 
     /**
      * 資材の内容
-     * 
+     *
      * @param materials 資材
      * @return
      */
@@ -651,7 +648,7 @@ public final class CreateReportLogic {
 
     /**
      * 報告書をCSVファイルに書き込む(最初の列を取り除く)
-     * 
+     *
      * @param file ファイル
      * @param header ヘッダー
      * @param body 内容
@@ -671,7 +668,7 @@ public final class CreateReportLogic {
 
     /**
      * 報告書をCSVファイルに書き込む
-     * 
+     *
      * @param file ファイル
      * @param header ヘッダー
      * @param body 内容
@@ -680,22 +677,20 @@ public final class CreateReportLogic {
      */
     public static void writeCsv(File file, String[] header, List<String[]> body, boolean applend)
             throws IOException {
-        OutputStream stream = new BufferedOutputStream(new FileOutputStream(file, applend));
-        try {
-            if (!file.exists() || (FileUtils.sizeOf(file) <= 0)) {
-                IOUtils.write(StringUtils.join(header, ',') + "\r\n", stream, AppConstants.CHARSET);
+        Path path = file.toPath();
+        try (Writer writer = Files.newBufferedWriter(path, AppConstants.CHARSET)) {
+            if (!Files.exists(path) || (Files.size(path) <= 0)) {
+                writer.write(StringUtils.join(header, ',') + "\r\n");
             }
             for (String[] colums : body) {
-                IOUtils.write(StringUtils.join(colums, ',') + "\r\n", stream, AppConstants.CHARSET);
+                writer.write(StringUtils.join(colums, ',') + "\r\n");
             }
-        } finally {
-            stream.close();
         }
     }
 
     /**
      * オブジェクト配列をテーブルウィジェットに表示できるように文字列に変換します
-     * 
+     *
      * @param from テーブルに表示する内容
      * @return テーブルに表示する内容
      */
@@ -717,7 +712,7 @@ public final class CreateReportLogic {
 
     /**
      * 艦娘をフィルタします
-     * 
+     *
      * @param ship 艦娘
      * @param filter フィルターオブジェクト
      * @return フィルタ結果
@@ -928,7 +923,7 @@ public final class CreateReportLogic {
 
     /**
      * 海戦・ドロップ報告書を書き込む
-     * 
+     *
      * @param dto 海戦・ドロップ報告
      */
     public static void storeBattleResultReport(BattleResultDto dto) {
@@ -947,7 +942,7 @@ public final class CreateReportLogic {
 
     /**
      * 建造報告書を書き込む
-     * 
+     *
      * @param dto 建造報告
      */
     public static void storeCreateShipReport(GetShipDto dto) {
@@ -966,7 +961,7 @@ public final class CreateReportLogic {
 
     /**
      * 開発報告書を書き込む
-     * 
+     *
      * @param dto 開発報告
      */
     public static void storeCreateItemReport(CreateItemDto dto) {
@@ -985,7 +980,7 @@ public final class CreateReportLogic {
 
     /**
      * 遠征報告書を書き込む
-     * 
+     *
      * @param dto 遠征結果
      */
     public static void storeCreateMissionReport(MissionResultDto dto) {
@@ -1004,7 +999,7 @@ public final class CreateReportLogic {
 
     /**
      * 資材ログを書き込む
-     * 
+     *
      * @param material 資材
      */
     public static void storeMaterialReport(MaterialDto material) {
@@ -1023,7 +1018,7 @@ public final class CreateReportLogic {
 
     /**
      * 書き込み先のファイルを返します
-     * 
+     *
      * @param name ファイル名
      * @param altername 代替ファイル名
      * @return File
@@ -1045,29 +1040,25 @@ public final class CreateReportLogic {
 
     /**
      * ファイルがロックされているかを確認します
-     * 
+     *
      * @param file ファイル
      * @return
      * @throws IOException
      */
-    private static boolean isLocked(File file) throws IOException {
+    private static boolean isLocked(File file) {
         if (!file.isFile()) {
             return false;
         }
-        try {
-            RandomAccessFile raf = new RandomAccessFile(file, "rw");
-            try {
-                FileChannel channel = raf.getChannel();
-                FileLock lock = channel.tryLock();
-                if (lock == null) {
-                    return true;
-                }
+        try (FileChannel fc = FileChannel.open(file.toPath(),
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+            FileLock lock = fc.tryLock();
+            if (lock != null) {
                 lock.release();
                 return false;
-            } finally {
-                raf.close();
+            } else {
+                return true;
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             return true;
         }
     }

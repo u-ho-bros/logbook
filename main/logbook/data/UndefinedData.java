@@ -15,7 +15,7 @@ import javax.json.JsonReader;
 
 /**
  * 同定されていない未加工のデータ
- * 
+ *
  */
 public class UndefinedData implements Data {
 
@@ -29,7 +29,7 @@ public class UndefinedData implements Data {
 
     /**
      * 未加工データのコンストラクター
-     * 
+     *
      * @param url URL
      * @param response レスポンスのバイト配列
      */
@@ -65,7 +65,7 @@ public class UndefinedData implements Data {
      * 未定義のデータを同定します
      * 同定出来ない場合の型はUndefeatedDataです
      * </p>
-     * 
+     *
      * @param plaindata
      * @return
      */
@@ -91,10 +91,11 @@ public class UndefinedData implements Data {
                     while (((read = stream.read()) != -1) && (read != '=')) {
                     }
 
-                    JsonReader jsonreader = Json.createReader(stream);
-                    JsonObject json = jsonreader.readObject();
+                    try (JsonReader jsonreader = Json.createReader(stream)) {
+                        JsonObject json = jsonreader.readObject();
 
-                    return new ActionData(type, this.date, json, field);
+                        return new ActionData(type, this.date, json, field);
+                    }
                 } catch (Exception e) {
                     return this;
                 }

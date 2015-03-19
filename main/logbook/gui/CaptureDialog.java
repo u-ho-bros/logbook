@@ -336,8 +336,7 @@ public final class CaptureDialog extends Dialog {
                 BufferedImage image = AwtUtils.getCapture(this.rectangle);
                 if (image != null) {
 
-                    ImageOutputStream ios = ImageIO.createImageOutputStream(file);
-                    try {
+                    try (ImageOutputStream ios = ImageIO.createImageOutputStream(file)) {
                         ImageWriter writer = ImageIO.getImageWritersByFormatName(AppConfig.get().getImageFormat())
                                 .next();
                         try {
@@ -356,8 +355,6 @@ public final class CaptureDialog extends Dialog {
                         } finally {
                             writer.dispose();
                         }
-                    } finally {
-                        ios.close();
                     }
                 }
             } catch (Exception e) {
