@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
@@ -678,7 +679,11 @@ public final class CreateReportLogic {
     public static void writeCsv(File file, String[] header, List<String[]> body, boolean applend)
             throws IOException {
         Path path = file.toPath();
-        try (Writer writer = Files.newBufferedWriter(path, AppConstants.CHARSET, StandardOpenOption.APPEND)) {
+        OpenOption[] options = {};
+        if (applend) {
+            options = new OpenOption[] { StandardOpenOption.APPEND };
+        }
+        try (Writer writer = Files.newBufferedWriter(path, AppConstants.CHARSET, options)) {
             if (!Files.exists(path) || (Files.size(path) <= 0)) {
                 writer.write(StringUtils.join(header, ',') + "\r\n");
             }
