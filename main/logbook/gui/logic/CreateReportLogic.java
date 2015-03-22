@@ -679,9 +679,11 @@ public final class CreateReportLogic {
     public static void writeCsv(File file, String[] header, List<String[]> body, boolean applend)
             throws IOException {
         Path path = file.toPath();
-        OpenOption[] options = {};
+        OpenOption[] options;
         if (applend) {
             options = new OpenOption[] { StandardOpenOption.APPEND };
+        } else {
+            options = new OpenOption[] { StandardOpenOption.CREATE };
         }
         try (Writer writer = Files.newBufferedWriter(path, AppConstants.CHARSET, options)) {
             if (!Files.exists(path) || (Files.size(path) <= 0)) {
