@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Shell;
  * アップデートチェックを行います
  *
  */
-public final class AsyncExecUpdateCheck extends Thread {
+public final class AsyncExecUpdateCheck implements Runnable {
 
     private static final Logger LOG = LogManager.getLogger(AsyncExecUpdateCheck.class);
 
@@ -24,12 +24,11 @@ public final class AsyncExecUpdateCheck extends Thread {
 
     /**
      * コンストラクター
-     * 
+     *
      * @param shell
      */
     public AsyncExecUpdateCheck(Shell shell) {
         this.shell = shell;
-        this.setName("logbook_async_exec_update_check");
     }
 
     @Override

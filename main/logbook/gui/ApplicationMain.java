@@ -696,7 +696,7 @@ public final class ApplicationMain {
         executor.scheduleWithFixedDelay(new Sound.PlayerThread(), 0, 500, TimeUnit.MILLISECONDS);
         // アップデートチェックする
         if (AppConfig.get().isCheckUpdate()) {
-            new AsyncExecUpdateCheck(this.shell).start();
+            executor.submit(new AsyncExecUpdateCheck(this.shell));
         }
     }
 
