@@ -681,7 +681,7 @@ public final class CreateReportLogic {
         Path path = file.toPath();
         OpenOption[] options;
         if (applend) {
-            options = new OpenOption[] { StandardOpenOption.APPEND };
+            options = new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.APPEND };
         } else {
             options = new OpenOption[] { StandardOpenOption.CREATE };
         }
