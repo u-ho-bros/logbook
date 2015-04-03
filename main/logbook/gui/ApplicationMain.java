@@ -27,9 +27,9 @@ import logbook.gui.listener.ShipListReportAdapter;
 import logbook.gui.listener.TrayItemMenuListener;
 import logbook.gui.listener.TraySelectionListener;
 import logbook.gui.logic.LayoutLogic;
-import logbook.gui.logic.Sound;
 import logbook.gui.widgets.FleetComposite;
 import logbook.server.proxy.ProxyServer;
+import logbook.thread.PlayerThread;
 import logbook.thread.ThreadManager;
 
 import org.apache.logging.log4j.LogManager;
@@ -693,7 +693,7 @@ public final class ApplicationMain {
         // 非同期でログを出すスレッド
         executor.scheduleWithFixedDelay(new AsyncExecConsole(this.console), 0, 500, TimeUnit.MILLISECONDS);
         // サウンドを出すスレッド
-        executor.scheduleWithFixedDelay(new Sound.PlayerThread(), 0, 500, TimeUnit.MILLISECONDS);
+        executor.scheduleWithFixedDelay(new PlayerThread(), 0, 500, TimeUnit.MILLISECONDS);
         // アップデートチェックする
         if (AppConfig.get().isCheckUpdate()) {
             executor.submit(new AsyncExecUpdateCheck(this.shell));
