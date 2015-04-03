@@ -2,11 +2,6 @@ package logbook.gui.logic;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -551,54 +546,6 @@ public final class CreateReportLogic {
     }
 
     /**
-     * 報告書をCSVファイルに書き込む(最初の列を取り除く)
-     *
-     * @param file ファイル
-     * @param header ヘッダー
-     * @param body 内容
-     * @param applend 追記フラグ
-     * @throws IOException
-     */
-    public static void writeCsvStripFirstColumn(File file, String[] header, List<String[]> body, boolean applend)
-            throws IOException {
-        // 報告書の項番を除く
-        String[] copyheader = Arrays.copyOfRange(header, 1, header.length);
-        List<String[]> copybody = new ArrayList<String[]>();
-        for (String[] strings : body) {
-            copybody.add(Arrays.copyOfRange(strings, 1, strings.length));
-        }
-        writeCsv(file, copyheader, copybody, applend);
-    }
-
-    /**
-     * 報告書をCSVファイルに書き込む
-     *
-     * @param file ファイル
-     * @param header ヘッダー
-     * @param body 内容
-     * @param applend 追記フラグ
-     * @throws IOException
-     */
-    public static void writeCsv(File file, String[] header, List<String[]> body, boolean applend)
-            throws IOException {
-        Path path = file.toPath();
-        OpenOption[] options;
-        if (applend) {
-            options = new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.APPEND };
-        } else {
-            options = new OpenOption[] { StandardOpenOption.CREATE };
-        }
-        try (Writer writer = Files.newBufferedWriter(path, AppConstants.CHARSET, options)) {
-            if (!Files.exists(path) || (Files.size(path) <= 0)) {
-                writer.write(StringUtils.join(header, ',') + "\r\n");
-            }
-            for (String[] colums : body) {
-                writer.write(StringUtils.join(colums, ',') + "\r\n");
-            }
-        }
-    }
-
-    /**
      * オブジェクト配列をテーブルウィジェットに表示できるように文字列に変換します
      *
      * @param from テーブルに表示する内容
@@ -631,7 +578,7 @@ public final class CreateReportLogic {
 
             File report = FileUtils.getStoreFile(AppConstants.LOG_BATTLE_RESULT, AppConstants.LOG_BATTLE_RESULT_ALT);
 
-            CreateReportLogic.writeCsvStripFirstColumn(report,
+            FileUtils.writeCsvStripFirstColumn(report,
                     CreateReportLogic.getBattleResultStoreHeader(),
                     CreateReportLogic.getBattleResultStoreBody(dtoList), true);
         } catch (IOException e) {
@@ -650,7 +597,7 @@ public final class CreateReportLogic {
 
             File report = FileUtils.getStoreFile(AppConstants.LOG_CREATE_SHIP, AppConstants.LOG_CREATE_SHIP_ALT);
 
-            CreateReportLogic.writeCsvStripFirstColumn(report,
+            FileUtils.writeCsvStripFirstColumn(report,
                     CreateReportLogic.getCreateShipHeader(),
                     CreateReportLogic.getCreateShipBody(dtoList), true);
         } catch (IOException e) {
@@ -669,7 +616,7 @@ public final class CreateReportLogic {
 
             File report = FileUtils.getStoreFile(AppConstants.LOG_CREATE_ITEM, AppConstants.LOG_CREATE_ITEM_ALT);
 
-            CreateReportLogic.writeCsvStripFirstColumn(report,
+            FileUtils.writeCsvStripFirstColumn(report,
                     CreateReportLogic.getCreateItemHeader(),
                     CreateReportLogic.getCreateItemBody(dtoList), true);
         } catch (IOException e) {
@@ -688,7 +635,7 @@ public final class CreateReportLogic {
 
             File report = FileUtils.getStoreFile(AppConstants.LOG_MISSION, AppConstants.LOG_MISSION_ALT);
 
-            CreateReportLogic.writeCsvStripFirstColumn(report,
+            FileUtils.writeCsvStripFirstColumn(report,
                     CreateReportLogic.getCreateMissionResultHeader(),
                     CreateReportLogic.getMissionResultBody(dtoList), true);
         } catch (IOException e) {
@@ -707,7 +654,7 @@ public final class CreateReportLogic {
 
             File report = FileUtils.getStoreFile(AppConstants.LOG_RESOURCE, AppConstants.LOG_RESOURCE_ALT);
 
-            CreateReportLogic.writeCsvStripFirstColumn(report,
+            FileUtils.writeCsvStripFirstColumn(report,
                     CreateReportLogic.getMaterialHeader(),
                     CreateReportLogic.getMaterialStoreBody(dtoList), true);
         } catch (IOException e) {
