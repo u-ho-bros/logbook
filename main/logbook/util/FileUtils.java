@@ -1,8 +1,9 @@
 package logbook.util;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -108,14 +109,16 @@ public class FileUtils {
         if (applend) {
             options = new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.APPEND };
         } else {
-            options = new OpenOption[] { StandardOpenOption.CREATE };
+            options = new OpenOption[] { StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING };
         }
-        try (Writer writer = Files.newBufferedWriter(path, AppConstants.CHARSET, options)) {
+        try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(path, options))) {
             if (!Files.exists(path) || (Files.size(path) <= 0)) {
-                writer.write(StringUtils.join(header, ',') + "\r\n");
+                out.write(StringUtils.join(header, ',').getBytes(AppConstants.CHARSET));
+                out.write("\r\n".getBytes(AppConstants.CHARSET));
             }
             for (String[] colums : body) {
-                writer.write(StringUtils.join(colums, ',') + "\r\n");
+                out.write(StringUtils.join(colums, ',').getBytes(AppConstants.CHARSET));
+                out.write("\r\n".getBytes(AppConstants.CHARSET));
             }
         }
     }
