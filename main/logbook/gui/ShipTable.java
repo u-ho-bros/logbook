@@ -216,7 +216,7 @@ public final class ShipTable extends AbstractTableDialog {
 
     @Override
     protected TableItemCreator getTableItemCreator() {
-        return CreateReportLogic.SHIP_LIST_TABLE_ITEM_CREATOR;
+        return TableItemCreator.SHIP_LIST_TABLE_ITEM_CREATOR;
     }
 
     @Override
