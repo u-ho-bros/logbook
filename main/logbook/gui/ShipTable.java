@@ -44,6 +44,15 @@ public final class ShipTable extends AbstractTableDialog {
     }
 
     /**
+     * @param parent
+     * @param filter
+     */
+    public ShipTable(Shell parent, ShipFilterDto filter) {
+        super(parent);
+        this.filter = filter;
+    }
+
+    /**
      * フィルターを設定する
      * @param filter フィルター
      */
