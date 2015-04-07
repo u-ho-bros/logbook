@@ -247,7 +247,7 @@ public final class ApplicationMain {
                     MessageBox box = new MessageBox(ApplicationMain.this.shell, SWT.YES | SWT.NO
                             | SWT.ICON_QUESTION);
                     box.setText("終了の確認");
-                    box.setMessage("航海日誌を終了しますか？");
+                    box.setMessage(AppConstants.NAME + "を終了しますか？");
                     e.doit = box.open() == SWT.YES;
                 }
             }
