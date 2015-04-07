@@ -5,8 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import logbook.config.AppConfig;
@@ -16,6 +15,7 @@ import logbook.gui.listener.TableToClipboardAdapter;
 import logbook.gui.listener.TableToCsvSaveAdapter;
 import logbook.gui.logic.LayoutLogic;
 import logbook.gui.logic.TableItemCreator;
+import logbook.thread.ThreadManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -41,8 +41,8 @@ import org.eclipse.swt.widgets.TableItem;
  */
 public abstract class AbstractTableDialog extends Dialog {
 
-    /** タイマー */
-    protected Timer timer;
+    /** スケジューリングされた再読み込みタスク */
+    protected ScheduledFuture<?> future;
 
     /** ヘッダー */
     protected String[] header = this.getTableHeader();
@@ -166,9 +166,9 @@ public abstract class AbstractTableDialog extends Dialog {
                 this.display.sleep();
             }
         }
-        // タイマーの終了
-        if (this.timer != null) {
-            this.timer.cancel();
+        // タスクがある場合キャンセル
+        if (this.future != null) {
+            this.future.cancel(false);
         }
     }
 
@@ -298,7 +298,7 @@ public abstract class AbstractTableDialog extends Dialog {
 
     /**
      * テーブル行を作成するクリエイターを返します
-     * 
+     *
      * @return TableItemCreator
      */
     protected abstract TableItemCreator getTableItemCreator();
@@ -311,7 +311,7 @@ public abstract class AbstractTableDialog extends Dialog {
 
     /**
      * テーブルをソートします
-     * 
+     *
      * @param headerColumn ソートするカラム
      */
     protected void sortTableItems(TableColumn headerColumn) {
@@ -327,7 +327,7 @@ public abstract class AbstractTableDialog extends Dialog {
 
     /**
      * テーブルをソートします
-     * 
+     *
      * @param index カラムインデックス
      * @param headerColumn ソートするカラム
      */
@@ -431,7 +431,7 @@ public abstract class AbstractTableDialog extends Dialog {
 
         /**
          * 比較する
-         * 
+         *
          * @param o1
          * @param o2
          * @param order
@@ -480,47 +480,27 @@ public abstract class AbstractTableDialog extends Dialog {
         @Override
         public void widgetSelected(SelectionEvent e) {
             if (this.menuitem.getSelection()) {
-                // タイマーを作成
-                if (AbstractTableDialog.this.timer == null) {
-                    AbstractTableDialog.this.timer = new Timer(true);
+                Runnable command = () -> {
+                    if (!AbstractTableDialog.this.shell.isDisposed()) {
+                        AbstractTableDialog.this.display.asyncExec(() -> {
+                            AbstractTableDialog.this.reloadTable();
+                        });
+                    } else {
+                        // ウインドウが消えていたらタスクをキャンセルする
+                        throw new ThreadDeath();
+                    }
+                };
+                // タスクがある場合キャンセル
+                if (AbstractTableDialog.this.future != null) {
+                    AbstractTableDialog.this.future.cancel(false);
                 }
                 // 3秒毎に再読み込みするようにスケジュールする
-                AbstractTableDialog.this.timer.schedule(new CyclicReloadTask(AbstractTableDialog.this), 0,
-                        TimeUnit.SECONDS.toMillis(3));
+                AbstractTableDialog.this.future = ThreadManager.getExecutorService()
+                        .scheduleWithFixedDelay(command, 0, 3, TimeUnit.SECONDS);
             } else {
-                // タイマーを終了
-                if (AbstractTableDialog.this.timer != null) {
-                    AbstractTableDialog.this.timer.cancel();
-                    AbstractTableDialog.this.timer = null;
-                }
-            }
-        }
-    }
-
-    /**
-     * テーブルを定期的に再読み込みする
-     */
-    protected static class CyclicReloadTask extends TimerTask {
-
-        private final AbstractTableDialog dialog;
-
-        public CyclicReloadTask(AbstractTableDialog dialog) {
-            this.dialog = dialog;
-        }
-
-        @Override
-        public void run() {
-            synchronized (this.dialog.shell) {
-                if (!this.dialog.shell.isDisposed()) {
-                    this.dialog.display.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            CyclicReloadTask.this.dialog.reloadTable();
-                        }
-                    });
-                } else {
-                    // ウインドウが消えていたらタスクをキャンセルする
-                    this.cancel();
+                // タスクがある場合キャンセル
+                if (AbstractTableDialog.this.future != null) {
+                    AbstractTableDialog.this.future.cancel(false);
                 }
             }
         }
