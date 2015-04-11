@@ -23,6 +23,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -129,10 +131,16 @@ public abstract class AbstractTableDialog extends Dialog {
         reload.setAccelerator(SWT.F5);
         reload.addSelectionListener(new TableReloadAdapter());
 
+        Boolean isCyclicReload = AppConfig.get().getCyclicReloadMap().get(this.getClass().getName());
         MenuItem cyclicReload = new MenuItem(this.opemenu, SWT.CHECK);
-        cyclicReload.setText("定期的に再読み込み(3秒)(&A)\tCtrl+F5");
+        cyclicReload.setText("定期的に再読み込み(&A)\tCtrl+F5");
         cyclicReload.setAccelerator(SWT.CTRL + SWT.F5);
-        cyclicReload.addSelectionListener(new CyclicReloadAdapter(cyclicReload));
+        if ((isCyclicReload != null) && isCyclicReload.booleanValue()) {
+            cyclicReload.setSelection(true);
+        }
+        CyclicReloadAdapter adapter = new CyclicReloadAdapter(cyclicReload);
+        cyclicReload.addSelectionListener(adapter);
+        adapter.setCyclicReload(cyclicReload);
 
         MenuItem selectVisible = new MenuItem(this.opemenu, SWT.NONE);
         selectVisible.setText("列の表示・非表示(&V)");
@@ -156,6 +164,15 @@ public abstract class AbstractTableDialog extends Dialog {
         this.setTableBody();
         // 列幅を整える
         this.packTableHeader();
+
+        // 閉じた時に設定を保存
+        this.shell.addShellListener(new ShellAdapter() {
+            @Override
+            public void shellClosed(ShellEvent e) {
+                AppConfig.get().getCyclicReloadMap()
+                        .put(AbstractTableDialog.this.getClass().getName(), cyclicReload.getSelection());
+            }
+        });
 
         this.createContents();
         this.shell.open();
@@ -479,11 +496,17 @@ public abstract class AbstractTableDialog extends Dialog {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
-            if (this.menuitem.getSelection()) {
+            this.setCyclicReload(this.menuitem);
+        }
+
+        private void setCyclicReload(MenuItem menuitem) {
+            if (menuitem.getSelection()) {
                 Runnable command = () -> {
                     if (!AbstractTableDialog.this.shell.isDisposed()) {
                         AbstractTableDialog.this.display.asyncExec(() -> {
-                            AbstractTableDialog.this.reloadTable();
+                            if (!AbstractTableDialog.this.shell.isDisposed()) {
+                                AbstractTableDialog.this.reloadTable();
+                            }
                         });
                     } else {
                         // ウインドウが消えていたらタスクをキャンセルする
@@ -494,9 +517,9 @@ public abstract class AbstractTableDialog extends Dialog {
                 if (AbstractTableDialog.this.future != null) {
                     AbstractTableDialog.this.future.cancel(false);
                 }
-                // 3秒毎に再読み込みするようにスケジュールする
+                // 再読み込みするようにスケジュールする
                 AbstractTableDialog.this.future = ThreadManager.getExecutorService()
-                        .scheduleWithFixedDelay(command, 0, 3, TimeUnit.SECONDS);
+                        .scheduleWithFixedDelay(command, 1, 1, TimeUnit.SECONDS);
             } else {
                 // タスクがある場合キャンセル
                 if (AbstractTableDialog.this.future != null) {
