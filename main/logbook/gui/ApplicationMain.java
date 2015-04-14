@@ -689,7 +689,7 @@ public final class ApplicationMain {
         // プロキシサーバーを開始する
         executor.submit(new ProxyServer(AppConfig.get().getListenPort(), this.shell));
         // 非同期で画面を更新するスレッド
-        executor.scheduleWithFixedDelay(new AsyncExecApplicationMain(this), 0, 1, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(new AsyncExecApplicationMain(this), 0, 1, TimeUnit.SECONDS);
         // 非同期でログを出すスレッド
         executor.scheduleWithFixedDelay(new AsyncExecConsole(this.console), 0, 500, TimeUnit.MILLISECONDS);
         // サウンドを出すスレッド
