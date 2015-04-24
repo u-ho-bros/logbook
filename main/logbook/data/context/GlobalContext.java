@@ -614,6 +614,9 @@ public final class GlobalContext {
 
                     int section = ((JsonNumber) jmission.get(1)).intValue();
                     String mission = Deck.get(section);
+                    if (mission == null) {
+                        mission = "<UNKNOWN>";
+                    }
                     long milis = ((JsonNumber) jmission.get(2)).longValue();
                     long fleetid = object.getJsonNumber("api_id").longValue();
 
