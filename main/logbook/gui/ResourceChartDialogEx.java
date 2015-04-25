@@ -398,28 +398,14 @@ public final class ResourceChartDialogEx extends Dialog {
      * @param to 終了(自身を含まない)
      */
     private void loadSeries(Date from, Date to) {
-        this.fuel = new XYChart.Series<>();
-        this.ammo = new XYChart.Series<>();
-        this.metal = new XYChart.Series<>();
-        this.bauxite = new XYChart.Series<>();
-        this.bucket = new XYChart.Series<>();
-        this.burner = new XYChart.Series<>();
-        this.research = new XYChart.Series<>();
-        this.fuel.setName("燃料");
-        this.ammo.setName("弾薬");
-        this.metal.setName("鋼材");
-        this.bauxite.setName("ボーキ");
-        this.bucket.setName("高速修復材");
-        this.burner.setName("高速建造材");
-        this.research.setName("開発資材");
-
-        List<XYChart.Data<Number, Number>> fuelList = this.fuel.getData();
-        List<XYChart.Data<Number, Number>> ammoList = this.ammo.getData();
-        List<XYChart.Data<Number, Number>> metalList = this.metal.getData();
-        List<XYChart.Data<Number, Number>> bauxiteList = this.bauxite.getData();
-        List<XYChart.Data<Number, Number>> bucketList = this.bucket.getData();
-        List<XYChart.Data<Number, Number>> burnerList = this.burner.getData();
-        List<XYChart.Data<Number, Number>> researchList = this.research.getData();
+        // Seriesに直接addすると1回addするごとにXYChart$Series$1.onChanged()が呼ばれて非常にパフォーマンスが悪いのでArrayListに入れてからaddAllする
+        List<XYChart.Data<Number, Number>> fuelList = new ArrayList<>();
+        List<XYChart.Data<Number, Number>> ammoList = new ArrayList<>();
+        List<XYChart.Data<Number, Number>> metalList = new ArrayList<>();
+        List<XYChart.Data<Number, Number>> bauxiteList = new ArrayList<>();
+        List<XYChart.Data<Number, Number>> bucketList = new ArrayList<>();
+        List<XYChart.Data<Number, Number>> burnerList = new ArrayList<>();
+        List<XYChart.Data<Number, Number>> researchList = new ArrayList<>();
         try {
             try (Stream<String> stream = Files.lines(
                     Paths.get(AppConfig.get().getReportPath(), AppConstants.LOG_RESOURCE), AppConstants.CHARSET)) {
@@ -443,6 +429,28 @@ public final class ResourceChartDialogEx extends Dialog {
         } catch (IOException e) {
             LOG.warn("資材チャートの読み込み中に例外が発生しました", e);
         }
+
+        this.fuel = new XYChart.Series<>();
+        this.ammo = new XYChart.Series<>();
+        this.metal = new XYChart.Series<>();
+        this.bauxite = new XYChart.Series<>();
+        this.bucket = new XYChart.Series<>();
+        this.burner = new XYChart.Series<>();
+        this.research = new XYChart.Series<>();
+        this.fuel.getData().addAll(fuelList);
+        this.ammo.getData().addAll(ammoList);
+        this.metal.getData().addAll(metalList);
+        this.bauxite.getData().addAll(bauxiteList);
+        this.bucket.getData().addAll(bucketList);
+        this.burner.getData().addAll(burnerList);
+        this.research.getData().addAll(researchList);
+        this.fuel.setName("燃料");
+        this.ammo.setName("弾薬");
+        this.metal.setName("鋼材");
+        this.bauxite.setName("ボーキ");
+        this.bucket.setName("高速修復材");
+        this.burner.setName("高速建造材");
+        this.research.setName("開発資材");
     }
 
     /**
