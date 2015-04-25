@@ -72,7 +72,7 @@ public final class ResourceChartDialogEx extends Dialog {
     /** スケールテキスト */
     private static final String[] SCALE_TEXT = { "1日", "1週間", "2週間", "1ヶ月", "2ヶ月", "3ヶ月", "半年", "1年" };
     /** スケールテキストに対応する日 */
-    private static final int[] SCALE_DAYS = { 1, 7, 14, 30, 60, 90, 180, 365 };
+    private static final int[] SCALE_DAYS = { 0, 6, 13, 29, 59, 89, 179, 364 };
     /** 日付の表示パターン */
     private static final String DATE_PATTERN = "M月d日HH:mm";
     /** 資材テーブルに表示する資材のフォーマット */
