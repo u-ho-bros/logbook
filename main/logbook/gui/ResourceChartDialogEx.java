@@ -59,7 +59,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
 /**
- * 資材チャート
+ * 資材チャートのダイアログ
  *
  */
 public final class ResourceChartDialogEx extends Dialog {
@@ -75,8 +75,6 @@ public final class ResourceChartDialogEx extends Dialog {
     private static final int[] SCALE_DAYS = { 1, 7, 14, 30, 60, 90, 180, 365 };
     /** 日付の表示パターン */
     private static final String DATE_PATTERN = "M月d日HH:mm";
-    /** 日付の表示パターン */
-    private static final String DATE_SHORT_PATTERN = "M月d日";
     /** 資材テーブルに表示する資材のフォーマット */
     private static final String DIFF_FORMAT = "{0,number,0}({1,number,+0;-0})";
 
@@ -274,9 +272,7 @@ public final class ResourceChartDialogEx extends Dialog {
             VBox group = new VBox();
 
             this.xaxis = new NumberAxis();
-            this.xaxis.setLabel("日付");
             this.yaxis = new NumberAxis();
-            this.yaxis.setLabel("資材");
             this.yaxis.setForceZeroInRange(false);
 
             this.chart = new LineChart<Number, Number>(this.xaxis, this.yaxis);
@@ -352,18 +348,14 @@ public final class ResourceChartDialogEx extends Dialog {
      * 期間が変更された時の処理
      */
     private void changeRange() {
-        SimpleDateFormat format = new SimpleDateFormat(DATE_SHORT_PATTERN);
         // 開始
         Date from = getCalendar(this.dateTimeFrom).getTime();
         // 終了
         Calendar calTo = getCalendar(this.dateTimeTo);
-        // テキストとして表示する日付は選択された日をそのまま表示する
-        Date dispTo = calTo.getTime();
         // ログを読み込む日付はその日の23:59.59までなので1日加算する
         calTo.add(Calendar.DAY_OF_YEAR, 1);
         Date to = calTo.getTime();
 
-        this.chart.setTitle("資材チャート(" + format.format(from) + "-" + format.format(dispTo) + ")");
         this.xaxis.setTickLabelFormatter(new DateTimeConverter(from));
         this.loadSeries(from, to);
     }
