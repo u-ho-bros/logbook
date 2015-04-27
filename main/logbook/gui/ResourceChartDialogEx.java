@@ -556,9 +556,7 @@ public final class ResourceChartDialogEx extends Dialog {
      * @param dateTime
      */
     private static void setCalendar(Calendar cal, DateTime dateTime) {
-        dateTime.setYear(cal.get(Calendar.YEAR));
-        dateTime.setMonth(cal.get(Calendar.MONTH));
-        dateTime.setDay(cal.get(Calendar.DAY_OF_MONTH));
+        dateTime.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
     }
 
     /**
