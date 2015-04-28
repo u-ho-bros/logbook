@@ -501,8 +501,8 @@ public final class ResourceChartDialogEx extends Dialog {
                         t.put(key, entry.getValue());
                 }
             };
-            List<Entry<String, Log>> list = stream.map(Log::new)
-                    .skip(1)
+            List<Entry<String, Log>> list = stream.skip(1)
+                    .map(Log::new)
                     .filter(e -> e.date != null)
                     .collect(HashMap<String, Log>::new, accumulator, combiner)
                     .entrySet()
