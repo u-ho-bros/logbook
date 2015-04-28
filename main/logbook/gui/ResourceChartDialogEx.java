@@ -310,7 +310,7 @@ public final class ResourceChartDialogEx extends Dialog {
                     AppConstants.LOG_RESOURCE), this.body);
             this.setTableBody();
             this.packTableHeader();
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.warn("資材ログのテーブルを作成中例外が発生しました", e);
         }
     }
@@ -414,7 +414,7 @@ public final class ResourceChartDialogEx extends Dialog {
                                     researchList.add(new XYChart.Data<Number, Number>(time, e.research));
                                 });
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.warn("資材チャートの読み込み中に例外が発生しました", e);
         }
 
@@ -594,6 +594,14 @@ public final class ResourceChartDialogEx extends Dialog {
                 this.burner = Integer.parseInt(cols[6]);
                 this.research = Integer.parseInt(cols[7]);
             } catch (ParseException e) {
+                LOG.warn("資材ログを読み込み中に例外が発生しました:日付の形式が間違っています", e);
+                LOG.warn(line);
+            } catch (NumberFormatException e) {
+                LOG.warn("資材ログを読み込み中に例外が発生しました:数値型に変換出来ません", e);
+                LOG.warn(line);
+            } catch (IndexOutOfBoundsException e) {
+                LOG.warn("資材ログを読み込み中に例外が発生しました:項目数が一致しません", e);
+                LOG.warn(line);
             }
         }
     }
