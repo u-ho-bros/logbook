@@ -109,6 +109,9 @@ public class AppConstants {
     /** 装備一覧設定ファイル  */
     public static final File ITEM_CONFIG_FILE = new File("./config/item.xml");
 
+    /** レベル付き装備設定ファイル  */
+    public static final File ITEM_LEVEL_CONFIG_FILE = new File("./config/itemlevel.xml");
+
     /** 装備マスター設定ファイル  */
     public static final File ITEM_MST_CONFIG_FILE = new File("./config/itemmst.xml");
 

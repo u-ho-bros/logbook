@@ -1,6 +1,5 @@
 package logbook.data.context;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -9,11 +8,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +26,7 @@ import logbook.data.Data;
 import logbook.data.DataQueue;
 import logbook.data.EventSender;
 import logbook.data.event.CallScript;
+import logbook.data.event.RemodelSlot;
 import logbook.dto.BattleDto;
 import logbook.dto.BattleResultDto;
 import logbook.dto.CreateItemDto;
@@ -126,9 +123,6 @@ public final class GlobalContext {
     /** イベント ID */
     private static int eventId;
 
-    /** ログキュー */
-    private static Queue<String> consoleQueue = new ArrayBlockingQueue<String>(10);
-
     /** 保有資源・資材 */
     private static MaterialDto material = null;
 
@@ -146,27 +140,7 @@ public final class GlobalContext {
      */
     public GlobalContext() {
         this.sender.addEventListener(new CallScript());
-    }
-
-    /**
-     * 装備を復元する
-     * @param map
-     */
-    public static void setItemMap(Map<Long, Integer> map) {
-        for (Entry<Long, Integer> entry : map.entrySet()) {
-            Object obj = entry.getValue();
-            Integer id;
-            if (obj instanceof Integer) {
-                id = (Integer) obj;
-            } else {
-                // 旧設定ファイル用
-                id = Integer.parseInt(obj.toString());
-            }
-            ItemDto item = Item.get(id);
-            if (item != null) {
-                ItemContext.get().put(entry.getKey(), item);
-            }
-        }
+        this.sender.addEventListener(new RemodelSlot());
     }
 
     /**
@@ -309,13 +283,6 @@ public final class GlobalContext {
     @CheckForNull
     public static MaterialDto getMaterial() {
         return material;
-    }
-
-    /**
-     * @return ログメッセージ
-     */
-    public static String getConsoleMessage() {
-        return consoleQueue.poll();
     }
 
     /**
@@ -830,10 +797,12 @@ public final class GlobalContext {
             for (int i = 0; i < apidata.size(); i++) {
                 JsonObject object = (JsonObject) apidata.get(i);
                 int typeid = object.getJsonNumber("api_slotitem_id").intValue();
+                int level = object.getJsonNumber("api_level").intValue();
                 Long id = object.getJsonNumber("api_id").longValue();
                 ItemDto item = Item.get(typeid);
                 if (item != null) {
                     ItemContext.get().put(id, item);
+                    ItemContext.level().put(id, level);
                 }
             }
 
@@ -1392,9 +1361,12 @@ public final class GlobalContext {
         return new ShipInfoDto(name, type, flagship, afterlv, maxBull, maxFuel);
     }
 
+    /**
+     * 母港画面のログ出力
+     *
+     * @param message ログメッセージ
+     */
     private static void addConsole(Object message) {
-        consoleQueue.offer(new SimpleDateFormat(AppConstants.DATE_SHORT_FORMAT)
-                .format(Calendar.getInstance().getTime())
-                + "  " + message.toString());
+        ConsoleContext.log(message);
     }
 }
