@@ -2,7 +2,6 @@ package logbook.data.context;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -11,21 +10,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.TimeUnit;
 
-import javax.annotation.CheckForNull;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import logbook.config.AppConfig;
 import logbook.config.KdockConfig;
-import logbook.constants.AppConstants;
 import logbook.data.Data;
 import logbook.data.DataQueue;
 import logbook.data.EventSender;
 import logbook.data.event.CallScript;
+import logbook.data.event.Material;
 import logbook.data.event.RemodelSlot;
 import logbook.dto.BattleDto;
 import logbook.dto.BattleResultDto;
@@ -34,7 +30,6 @@ import logbook.dto.DeckMissionDto;
 import logbook.dto.DockDto;
 import logbook.dto.GetShipDto;
 import logbook.dto.ItemDto;
-import logbook.dto.MaterialDto;
 import logbook.dto.MissionResultDto;
 import logbook.dto.NdockDto;
 import logbook.dto.QuestDto;
@@ -123,12 +118,6 @@ public final class GlobalContext {
     /** イベント ID */
     private static int eventId;
 
-    /** 保有資源・資材 */
-    private static MaterialDto material = null;
-
-    /** 最後に資源ログに追加した時間 */
-    volatile private static Date materialLogLastUpdate = null;
-
     /** 連合艦隊 */
     private static boolean combined;
 
@@ -141,6 +130,7 @@ public final class GlobalContext {
     public GlobalContext() {
         this.sender.addEventListener(new CallScript());
         this.sender.addEventListener(new RemodelSlot());
+        this.sender.addEventListener(new Material());
     }
 
     /**
@@ -277,15 +267,6 @@ public final class GlobalContext {
     }
 
     /**
-     * 保有資材を取得します
-     * @return 保有資材
-     */
-    @CheckForNull
-    public static MaterialDto getMaterial() {
-        return material;
-    }
-
-    /**
      * 情報を更新します
      *
      * @return 更新する情報があった場合trueを返します
@@ -326,10 +307,6 @@ public final class GlobalContext {
             // 基本
             case BASIC:
                 doBasic(data);
-                break;
-            // 資材
-            case MATERIAL:
-                doMaterial(data);
                 break;
             // 遠征(帰還)
             case MISSION_RESULT:
@@ -531,11 +508,6 @@ public final class GlobalContext {
                 JsonObject apiBasic = apidata.getJsonObject("api_basic");
                 doBasicSub(apiBasic);
                 addConsole("司令部を更新しました");
-
-                // 保有資材を更新する
-                JsonArray apiMaterial = apidata.getJsonArray("api_material");
-                doMaterialSub(apiMaterial);
-                addConsole("保有資材を更新しました");
 
                 // 保有艦娘を更新する
                 JsonArray apiShip = apidata.getJsonArray("api_ship");
@@ -1044,75 +1016,6 @@ public final class GlobalContext {
         maxChara = apidata.getJsonNumber("api_max_chara").intValue();
         // 最大所有装備数
         maxSlotitem = apidata.getJsonNumber("api_max_slotitem").intValue();
-    }
-
-    /**
-     * 保有資材を更新する
-     *
-     * @param data
-     */
-    private static void doMaterial(Data data) {
-        try {
-            JsonArray apidata = data.getJsonObject().getJsonArray("api_data");
-
-            doMaterialSub(apidata);
-
-            addConsole("保有資材を更新しました");
-        } catch (Exception e) {
-            LOG.warn("保有資材を更新するに失敗しました", e);
-            LOG.warn(data);
-        }
-    }
-
-    /**
-     * 保有資材を更新する
-     *
-     * @param apidata
-     */
-    private static void doMaterialSub(JsonArray apidata) {
-        Date time = Calendar.getInstance().getTime();
-        MaterialDto dto = new MaterialDto();
-        dto.setTime(time);
-
-        for (JsonValue value : apidata) {
-            JsonObject entry = (JsonObject) value;
-
-            switch (entry.getInt("api_id")) {
-            case AppConstants.MATERIAL_FUEL:
-                dto.setFuel(entry.getInt("api_value"));
-                break;
-            case AppConstants.MATERIAL_AMMO:
-                dto.setAmmo(entry.getInt("api_value"));
-                break;
-            case AppConstants.MATERIAL_METAL:
-                dto.setMetal(entry.getInt("api_value"));
-                break;
-            case AppConstants.MATERIAL_BAUXITE:
-                dto.setBauxite(entry.getInt("api_value"));
-                break;
-            case AppConstants.MATERIAL_BURNER:
-                dto.setBurner(entry.getInt("api_value"));
-                break;
-            case AppConstants.MATERIAL_BUCKET:
-                dto.setBucket(entry.getInt("api_value"));
-                break;
-            case AppConstants.MATERIAL_RESEARCH:
-                dto.setResearch(entry.getInt("api_value"));
-                break;
-            default:
-                break;
-            }
-        }
-        material = dto;
-
-        // 資材ログに書き込む
-        if ((materialLogLastUpdate == null)
-                || (TimeUnit.MILLISECONDS.toSeconds(time.getTime() - materialLogLastUpdate.getTime()) >
-                AppConfig.get().getMaterialLogInterval())) {
-            CreateReportLogic.storeMaterialReport(material);
-
-            materialLogLastUpdate = time;
-        }
     }
 
     /**
