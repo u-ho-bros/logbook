@@ -16,6 +16,7 @@ import java.util.Set;
 import logbook.constants.AppConstants;
 import logbook.data.context.GlobalContext;
 import logbook.data.context.ItemContext;
+import logbook.data.context.ShipContext;
 import logbook.dto.BattleDto;
 import logbook.dto.BattleResultDto;
 import logbook.dto.CreateItemDto;
@@ -318,7 +319,7 @@ public final class CreateReportLogic {
      * @return 内容
      */
     public static List<String[]> getShipListBody(boolean specdiff, ShipFilterDto filter) {
-        Set<Entry<Long, ShipDto>> ships = GlobalContext.getShipMap().entrySet();
+        Set<Entry<Long, ShipDto>> ships = ShipContext.get().entrySet();
         List<Object[]> body = new ArrayList<Object[]>();
         int count = 0;
         for (Entry<Long, ShipDto> entry : ships) {

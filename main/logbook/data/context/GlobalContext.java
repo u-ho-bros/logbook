@@ -64,9 +64,6 @@ public final class GlobalContext {
     /** コンテキスト */
     private static final GlobalContext CONTEXT = new GlobalContext();
 
-    /** 艦娘Map */
-    private static Map<Long, ShipDto> shipMap = new ConcurrentSkipListMap<Long, ShipDto>();
-
     /** 秘書艦 */
     private static ShipDto secretary;
 
@@ -170,13 +167,6 @@ public final class GlobalContext {
                 ItemContext.get().put(entry.getKey(), item);
             }
         }
-    }
-
-    /**
-     * @return 艦娘Map
-     */
-    public static Map<Long, ShipDto> getShipMap() {
-        return shipMap;
     }
 
     /**
@@ -493,7 +483,7 @@ public final class GlobalContext {
                     int fuel = shipobj.getJsonNumber("api_fuel").intValue();
                     int bull = shipobj.getJsonNumber("api_bull").intValue();
 
-                    ShipDto ship = shipMap.get(shipid);
+                    ShipDto ship = ShipContext.get().get(shipid);
                     if (ship != null) {
                         ship.setFuel(fuel);
                         ship.setBull(bull);
@@ -535,7 +525,7 @@ public final class GlobalContext {
                 } else if (shipid == -1L) {
                     dockdto.removeShip(shipidx);
                 } else {
-                    ShipDto rship = shipMap.get(shipid);
+                    ShipDto rship = ShipContext.get().get(shipid);
 
                     DockDto otherDock = dock.get(rship.getFleetid());
 
@@ -584,7 +574,7 @@ public final class GlobalContext {
                 JsonArray apiShip = apidata.getJsonArray("api_ship");
                 for (int i = 0; i < apiShip.size(); i++) {
                     ShipDto ship = new ShipDto((JsonObject) apiShip.get(i));
-                    shipMap.put(Long.valueOf(ship.getId()), ship);
+                    ShipContext.get().put(Long.valueOf(ship.getId()), ship);
                 }
                 JsonArray apiDeckPort = apidata.getJsonArray("api_deck_port");
                 doDeck(apiDeckPort);
@@ -769,7 +759,7 @@ public final class GlobalContext {
             // 艦娘を追加します
             JsonObject apiShip = apidata.getJsonObject("api_ship");
             ShipDto ship = new ShipDto(apiShip);
-            shipMap.put(Long.valueOf(ship.getId()), ship);
+            ShipContext.get().put(Long.valueOf(ship.getId()), ship);
             // 投入資源を取得する
             ResourceDto resource = getShipResource.get(dock);
             if (resource == null) {
@@ -871,14 +861,14 @@ public final class GlobalContext {
                 Long shipid = Long.parseLong(shipidstr);
                 for (int i = 0; i < shipdata.size(); i++) {
                     ShipDto ship = new ShipDto((JsonObject) shipdata.get(i));
-                    shipMap.put(shipid, ship);
+                    ShipContext.get().put(shipid, ship);
                 }
             } else {
                 // 情報を破棄
-                shipMap.clear();
+                ShipContext.get().clear();
                 for (int i = 0; i < shipdata.size(); i++) {
                     ShipDto ship = new ShipDto((JsonObject) shipdata.get(i));
-                    shipMap.put(Long.valueOf(ship.getId()), ship);
+                    ShipContext.get().put(Long.valueOf(ship.getId()), ship);
                 }
             }
             // 艦隊を設定
@@ -900,10 +890,10 @@ public final class GlobalContext {
         try {
             JsonArray apidata = data.getJsonObject().getJsonArray("api_data");
             // 情報を破棄
-            shipMap.clear();
+            ShipContext.get().clear();
             for (int i = 0; i < apidata.size(); i++) {
                 ShipDto ship = new ShipDto((JsonObject) apidata.get(i));
-                shipMap.put(Long.valueOf(ship.getId()), ship);
+                ShipContext.get().put(Long.valueOf(ship.getId()), ship);
             }
             // 艦隊を設定
             doDeck(data.getJsonObject().getJsonArray("api_data_deck"));
@@ -955,7 +945,7 @@ public final class GlobalContext {
 
             for (int j = 0; j < apiship.size(); j++) {
                 Long shipid = Long.valueOf(((JsonNumber) apiship.get(j)).longValue());
-                ShipDto ship = shipMap.get(shipid);
+                ShipDto ship = ShipContext.get().get(shipid);
 
                 if (ship != null) {
                     dockdto.addShip(ship);
@@ -990,7 +980,7 @@ public final class GlobalContext {
     private static void doDestroyShip(Data data) {
         try {
             Long shipid = Long.parseLong(data.getField("api_ship_id"));
-            ShipDto ship = shipMap.get(shipid);
+            ShipDto ship = ShipContext.get().get(shipid);
             if (ship != null) {
                 // 持っている装備を廃棄する
                 List<Long> items = ship.getItemId();
@@ -998,7 +988,7 @@ public final class GlobalContext {
                     ItemContext.get().remove(item);
                 }
                 // 艦娘を外す
-                shipMap.remove(ship.getId());
+                ShipContext.get().remove(ship.getId());
 
                 DockDto dockdto = dock.get(ship.getFleetid());
                 if (dockdto != null)
@@ -1038,7 +1028,7 @@ public final class GlobalContext {
         try {
             String shipids = data.getField("api_id_items");
             for (String shipid : shipids.split(",")) {
-                ShipDto ship = shipMap.get(Long.parseLong(shipid));
+                ShipDto ship = ShipContext.get().get(Long.parseLong(shipid));
                 if (ship != null) {
                     // 持っている装備を廃棄する
                     List<Long> items = ship.getItemId();
@@ -1046,7 +1036,7 @@ public final class GlobalContext {
                         ItemContext.get().remove(item);
                     }
                     // 艦娘を外す
-                    shipMap.remove(ship.getId());
+                    ShipContext.get().remove(ship.getId());
                 }
             }
             addConsole("装備を廃棄しました");
