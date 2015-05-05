@@ -64,9 +64,6 @@ public final class GlobalContext {
     /** コンテキスト */
     private static final GlobalContext CONTEXT = new GlobalContext();
 
-    /** 装備Map */
-    private static Map<Long, ItemDto> itemMap = new ConcurrentSkipListMap<Long, ItemDto>();
-
     /** 艦娘Map */
     private static Map<Long, ShipDto> shipMap = new ConcurrentSkipListMap<Long, ShipDto>();
 
@@ -155,13 +152,6 @@ public final class GlobalContext {
     }
 
     /**
-     * @return 装備Map
-     */
-    public static Map<Long, ItemDto> getItemMap() {
-        return itemMap;
-    }
-
-    /**
      * 装備を復元する
      * @param map
      */
@@ -177,7 +167,7 @@ public final class GlobalContext {
             }
             ItemDto item = Item.get(id);
             if (item != null) {
-                itemMap.put(entry.getKey(), item);
+                ItemContext.get().put(entry.getKey(), item);
             }
         }
     }
@@ -772,7 +762,7 @@ public final class GlobalContext {
                     Long id = object.getJsonNumber("api_id").longValue();
                     ItemDto item = Item.get(typeid);
                     if (item != null) {
-                        itemMap.put(id, item);
+                        ItemContext.get().put(id, item);
                     }
                 }
             }
@@ -819,7 +809,7 @@ public final class GlobalContext {
                 Long id = object.getJsonNumber("api_id").longValue();
                 ItemDto item = Item.get(typeid);
                 if (item != null) {
-                    itemMap.put(id, item);
+                    ItemContext.get().put(id, item);
 
                     createitem.setName(item.getName());
                     createitem.setType(item.getType());
@@ -846,14 +836,14 @@ public final class GlobalContext {
         try {
             JsonArray apidata = data.getJsonObject().getJsonArray("api_data");
             // 破棄
-            itemMap.clear();
+            ItemContext.get().clear();
             for (int i = 0; i < apidata.size(); i++) {
                 JsonObject object = (JsonObject) apidata.get(i);
                 int typeid = object.getJsonNumber("api_slotitem_id").intValue();
                 Long id = object.getJsonNumber("api_id").longValue();
                 ItemDto item = Item.get(typeid);
                 if (item != null) {
-                    itemMap.put(id, item);
+                    ItemContext.get().put(id, item);
                 }
             }
 
@@ -1005,7 +995,7 @@ public final class GlobalContext {
                 // 持っている装備を廃棄する
                 List<Long> items = ship.getItemId();
                 for (Long item : items) {
-                    itemMap.remove(item);
+                    ItemContext.get().remove(item);
                 }
                 // 艦娘を外す
                 shipMap.remove(ship.getId());
@@ -1031,7 +1021,7 @@ public final class GlobalContext {
             String itemids = data.getField("api_slotitem_ids");
             for (String itemid : itemids.split(",")) {
                 Long item = Long.parseLong(itemid);
-                itemMap.remove(item);
+                ItemContext.get().remove(item);
             }
             addConsole("装備を廃棄しました");
         } catch (Exception e) {
@@ -1053,7 +1043,7 @@ public final class GlobalContext {
                     // 持っている装備を廃棄する
                     List<Long> items = ship.getItemId();
                     for (Long item : items) {
-                        itemMap.remove(item);
+                        ItemContext.get().remove(item);
                     }
                     // 艦娘を外す
                     shipMap.remove(ship.getId());

@@ -15,6 +15,7 @@ import java.util.Set;
 
 import logbook.constants.AppConstants;
 import logbook.data.context.GlobalContext;
+import logbook.data.context.ItemContext;
 import logbook.dto.BattleDto;
 import logbook.dto.BattleResultDto;
 import logbook.dto.CreateItemDto;
@@ -262,7 +263,7 @@ public final class CreateReportLogic {
      * @return 内容
      */
     public static List<String[]> getItemListBody() {
-        Set<Entry<Long, ItemDto>> items = GlobalContext.getItemMap().entrySet();
+        Set<Entry<Long, ItemDto>> items = ItemContext.get().entrySet();
         Map<ItemDto, Integer> itemCountMap = new HashMap<ItemDto, Integer>();
 
         for (Entry<Long, ItemDto> entry : items) {

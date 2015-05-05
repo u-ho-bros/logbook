@@ -15,7 +15,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import logbook.constants.AppConstants;
-import logbook.data.context.GlobalContext;
+import logbook.data.context.ItemContext;
 import logbook.internal.ExpTable;
 import logbook.internal.SallyArea;
 import logbook.internal.Ship;
@@ -378,7 +378,7 @@ public final class ShipDto extends AbstractDto {
      */
     public List<String> getSlot() {
         List<String> itemNames = new ArrayList<String>();
-        Map<Long, ItemDto> itemMap = GlobalContext.getItemMap();
+        Map<Long, ItemDto> itemMap = ItemContext.get();
         for (Long itemid : this.slot) {
             if (-1 != itemid) {
                 ItemDto name = itemMap.get(itemid);
@@ -399,7 +399,7 @@ public final class ShipDto extends AbstractDto {
      */
     public List<ItemDto> getItem() {
         List<ItemDto> items = new ArrayList<ItemDto>();
-        Map<Long, ItemDto> itemMap = GlobalContext.getItemMap();
+        Map<Long, ItemDto> itemMap = ItemContext.get();
         for (Long itemid : this.slot) {
             if (-1 != itemid) {
                 ItemDto item = itemMap.get(itemid);
@@ -680,7 +680,7 @@ public final class ShipDto extends AbstractDto {
         long accuracy = 0;
         for (Long itemid : this.slot) {
             if (-1 != itemid) {
-                Map<Long, ItemDto> itemMap = GlobalContext.getItemMap();
+                Map<Long, ItemDto> itemMap = ItemContext.get();
                 ItemDto item = itemMap.get(itemid);
                 if (item != null) {
                     accuracy += item.getHoum();
@@ -700,7 +700,7 @@ public final class ShipDto extends AbstractDto {
             // (火力 + 雷装) × 1.5 + 爆装 × 2 + 55
             long rai = 0;
             long baku = 0;
-            Map<Long, ItemDto> itemMap = GlobalContext.getItemMap();
+            Map<Long, ItemDto> itemMap = ItemContext.get();
             for (Long itemid : this.slot) {
                 if (-1 != itemid) {
                     ItemDto item = itemMap.get(itemid);
@@ -734,7 +734,7 @@ public final class ShipDto extends AbstractDto {
         // [ 艦船の対潜 ÷ 5 ] + 装備の対潜 × 2 + 25
         long taisenShip = this.getTaisen();
         long taisenItem = 0;
-        Map<Long, ItemDto> itemMap = GlobalContext.getItemMap();
+        Map<Long, ItemDto> itemMap = ItemContext.get();
         for (Long itemid : this.slot) {
             if (-1 != itemid) {
                 ItemDto item = itemMap.get(itemid);

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import logbook.data.context.GlobalContext;
+import logbook.data.context.ItemContext;
 import logbook.dto.DeckMissionDto;
 import logbook.dto.NdockDto;
 import logbook.dto.ShipDto;
@@ -47,7 +48,7 @@ public final class TrayItemMenuListener implements MenuDetectListener {
         }
         this.menu = new Menu(this.shell);
         // 装備数
-        int itemCount = GlobalContext.getItemMap().size();
+        int itemCount = ItemContext.get().size();
         // 最大保有可能 装備数
         int itemMax = GlobalContext.maxSlotitem();
         // 艦娘数
@@ -179,7 +180,7 @@ public final class TrayItemMenuListener implements MenuDetectListener {
 
     /**
      * 2つの日付から残り時間を計算する
-     * 
+     *
      * @param date1
      * @param date2
      * @return

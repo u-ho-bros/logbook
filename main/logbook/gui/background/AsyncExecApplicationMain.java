@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import logbook.config.AppConfig;
 import logbook.constants.AppConstants;
 import logbook.data.context.GlobalContext;
+import logbook.data.context.ItemContext;
 import logbook.dto.DeckMissionDto;
 import logbook.dto.DockDto;
 import logbook.dto.NdockDto;
@@ -106,7 +107,7 @@ public final class AsyncExecApplicationMain extends Thread {
         @Override
         public void run() {
             Button itemList = this.main.getItemList();
-            String setText = "所有装備(" + GlobalContext.getItemMap().size() + "/"
+            String setText = "所有装備(" + ItemContext.get().size() + "/"
                     + GlobalContext.maxSlotitem() + ")";
             if (!setText.equals(itemList.getText())) {
                 itemList.setText(setText);
@@ -393,7 +394,7 @@ public final class AsyncExecApplicationMain extends Thread {
             // タブを更新する
             CTabItem maintab = this.main.getTabFolder().getItem(0);
             maintab.setToolTipText(
-                    "装備:" + GlobalContext.getItemMap().size() + "/"
+                    "装備:" + ItemContext.get().size() + "/"
                             + GlobalContext.maxSlotitem()
                             + " 艦娘:" + GlobalContext.getShipMap().size() + "/"
                             + GlobalContext.maxChara());

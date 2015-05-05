@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import logbook.constants.AppConstants;
 import logbook.data.context.GlobalContext;
+import logbook.data.context.ItemContext;
 import logbook.dto.ItemDto;
 import logbook.util.BeanUtils;
 
@@ -15,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * 装備のIDと装備IDの紐付けを保存・復元します
- * 
+ *
  */
 public class ItemConfig {
     /** ロガー */
@@ -26,7 +27,7 @@ public class ItemConfig {
      */
     public static void store() throws IOException {
         Map<Long, Integer> map = new HashMap<Long, Integer>();
-        for (Entry<Long, ItemDto> entry : GlobalContext.getItemMap().entrySet()) {
+        for (Entry<Long, ItemDto> entry : ItemContext.get().entrySet()) {
             map.put(entry.getKey(), entry.getValue().getId());
         }
         BeanUtils.writeObject(AppConstants.ITEM_CONFIG_FILE, map);
@@ -34,7 +35,7 @@ public class ItemConfig {
 
     /**
      * 艦娘のIDと名前の紐付けを設定ファイルから読み込みます
-     * 
+     *
      * @param properties
      * @return
      */
