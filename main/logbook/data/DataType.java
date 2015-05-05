@@ -77,6 +77,21 @@ public enum DataType {
     QUEST_CLEAR("/kcsapi/api_req_quest/clearitemget"),
     /** 設定 */
     START2("/kcsapi/api_start2"),
+    /** 装備改修一覧 */
+    REMODEL_SLOTLIST("/kcsapi/api_req_kousyou/remodel_slotlist"),
+    /** 装備改修 */
+    REMODEL_SLOT("/kcsapi/api_req_kousyou/remodel_slot"),
+    /** 図鑑表示 */
+    PICTURE_BOOK("/kcsapi/api_get_member/picture_book"),
+    /** 戦績表示 */
+    RECORD("/kcsapi/api_get_member/record"),
+    /** ランキング */
+    RANKING("/kcsapi/api_req_ranking/getlist"),
+    /** アイテム */
+    PAYITEM("/kcsapi/api_get_member/payitem"),
+    /** 模様替え */
+    FURNITURE("/kcsapi/api_req_furniture/change"),
+
     /** フィルタ前のデータ */
     UNDEFINED(null);
 
