@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import logbook.config.AppConfig;
-import logbook.data.context.GlobalContext;
 import logbook.data.context.ShipContext;
 import logbook.dto.ShipDto;
 import logbook.internal.EvaluateExp;
@@ -303,7 +302,7 @@ public final class CalcExpDialog extends Dialog {
             select = ship.getId();
         } else {
             // 誰も選択されてない状態の場合は秘書艦を選択する
-            ShipDto ship = GlobalContext.getSecretary();
+            ShipDto ship = ShipContext.getSecretary();
             if (ship != null) {
                 select = ship.getId();
             }

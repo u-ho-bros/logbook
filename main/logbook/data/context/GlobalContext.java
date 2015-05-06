@@ -56,9 +56,6 @@ public final class GlobalContext {
     /** コンテキスト */
     private static final GlobalContext CONTEXT = new GlobalContext();
 
-    /** 秘書艦 */
-    private static ShipDto secretary;
-
     /** 建造 */
     private static List<GetShipDto> getShipList = new ArrayList<GetShipDto>();
 
@@ -131,13 +128,6 @@ public final class GlobalContext {
         this.sender.addEventListener(new CallScript());
         this.sender.addEventListener(new RemodelSlot());
         this.sender.addEventListener(new Material());
-    }
-
-    /**
-     * @return 秘書艦
-     */
-    public static ShipDto getSecretary() {
-        return secretary;
     }
 
     /**
@@ -485,7 +475,7 @@ public final class GlobalContext {
                     }
                 }
                 // 秘書艦を再設定
-                setSecretary(dock.get("1").getShips().get(0));
+                ShipContext.setSecretary(dock.get("1").getShips().get(0));
             }
         } catch (Exception e) {
             LOG.warn("編成を更新しますに失敗しました", e);
@@ -630,7 +620,7 @@ public final class GlobalContext {
                     data.getField("api_item3"),
                     data.getField("api_item4"),
                     data.getField("api_item5"),
-                    secretary, hqLevel
+                    ShipContext.getSecretary(), hqLevel
                     );
             lastBuildKdock = kdockid;
             getShipResource.put(kdockid, resource);
@@ -729,7 +719,7 @@ public final class GlobalContext {
 
             // 投入資源
             ResourceDto resources = new ResourceDto(data.getField("api_item1"), data.getField("api_item2"),
-                    data.getField("api_item3"), data.getField("api_item4"), secretary, hqLevel);
+                    data.getField("api_item3"), data.getField("api_item4"), ShipContext.getSecretary(), hqLevel);
 
             CreateItemDto createitem = new CreateItemDto(apidata, resources);
             if (createitem.isCreateFlag()) {
@@ -892,26 +882,13 @@ public final class GlobalContext {
                     dockdto.addShip(ship);
 
                     if ((i == 0) && (j == 0)) {
-                        setSecretary(ship);
+                        ShipContext.setSecretary(ship);
                     }
                     // 艦隊IDを設定
                     ship.setFleetid(fleetid);
                 }
             }
         }
-    }
-
-    /**
-     * 秘書艦を設定します
-     *
-     * @param ship
-     */
-    private static void setSecretary(ShipDto ship) {
-        if ((secretary == null) || (ship.getId() != secretary.getId())) {
-            addConsole(ship.getName() + "(Lv" + ship.getLv() + ")" + " が秘書艦に任命されました");
-        }
-        // 秘書艦を設定
-        secretary = ship;
     }
 
     /**

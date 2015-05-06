@@ -199,6 +199,12 @@ public class AppConstants {
     /** メッセージ  艦隊合計Lv:{0} */
     public static final String MESSAGE_TOTAL_LV = "艦隊合計Lv:{0}。";
 
+    /** メッセージ 泊地修理の準備中({0}分経過)*/
+    public static final String BERTH_REPAIR_1 = "泊地修理の準備中({0}分経過)";
+
+    /** メッセージ 泊地修理中({0}分経過)*/
+    public static final String BERTH_REPAIR_2 = "泊地修理中({0}分経過)";
+
     /** 海戦・ドロップ報告書.csv */
     public static final String LOG_BATTLE_RESULT = "海戦・ドロップ報告書.csv";
 
