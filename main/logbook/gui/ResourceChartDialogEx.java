@@ -646,19 +646,19 @@ public final class ResourceChartDialogEx extends Dialog {
         /** 1日 */
         ONE_DAY("1日", "HH:mm", 1, TimeUnit.HOURS.toMillis(1)),
         /** 1週間 */
-        ONE_WEEK("1週間", "M月d日", 7, TimeUnit.DAYS.toDays(1)),
+        ONE_WEEK("1週間", "M月d日", 7, TimeUnit.DAYS.toMillis(1)),
         /** 2週間 */
-        TWO_WEEK("2週間", "M月d日", 14, TimeUnit.DAYS.toDays(1)),
+        TWO_WEEK("2週間", "M月d日", 14, TimeUnit.DAYS.toMillis(1)),
         /** 1ヶ月 */
-        ONE_MONTH("1ヶ月", "M月d日", 30, TimeUnit.DAYS.toDays(2)),
+        ONE_MONTH("1ヶ月", "M月d日", 30, TimeUnit.DAYS.toMillis(2)),
         /** 2ヶ月 */
-        TWO_MONTH("2ヶ月", "M月d日", 60, TimeUnit.DAYS.toDays(5)),
+        TWO_MONTH("2ヶ月", "M月d日", 60, TimeUnit.DAYS.toMillis(5)),
         /** 3ヶ月 */
-        THREE_MONTH("3ヶ月", "M月d日", 90, TimeUnit.DAYS.toDays(10)),
+        THREE_MONTH("3ヶ月", "M月d日", 90, TimeUnit.DAYS.toMillis(10)),
         /** 半年 */
-        HALF_YEAR("半年", "M月d日", 180, TimeUnit.DAYS.toDays(15)),
+        HALF_YEAR("半年", "M月d日", 180, TimeUnit.DAYS.toMillis(15)),
         /** 1年 */
-        ONE_YEAR("1年", "M月d日", 365, TimeUnit.DAYS.toDays(30));
+        ONE_YEAR("1年", "M月d日", 365, TimeUnit.DAYS.toMillis(30));
 
         private String name;
         private String format;
