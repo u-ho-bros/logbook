@@ -353,7 +353,7 @@ public final class ResourceChartDialogEx extends Dialog {
 
         this.xaxis.setAutoRanging(false);
         this.xaxis.setLowerBound(0);
-        this.xaxis.setUpperBound(from.getTime() - to.getTime());
+        this.xaxis.setUpperBound(to.getTime() - from.getTime());
         this.xaxis.setTickUnit(option.getTickUnit());
         this.xaxis.setTickLabelFormatter(new DateTimeConverter(from, option.getFormat()));
         this.loadSeries(from, to);
