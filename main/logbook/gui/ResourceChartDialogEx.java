@@ -644,7 +644,7 @@ public final class ResourceChartDialogEx extends Dialog {
      */
     private static enum ScaleOption {
         /** 1日 */
-        ONE_DAY("1日", "HH:mm", 1, TimeUnit.HOURS.toMillis(1)),
+        ONE_DAY("1日", "HH:mm", 1, TimeUnit.HOURS.toMillis(2)),
         /** 1週間 */
         ONE_WEEK("1週間", "M月d日", 7, TimeUnit.DAYS.toMillis(1)),
         /** 2週間 */
