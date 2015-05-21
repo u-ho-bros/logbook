@@ -109,7 +109,7 @@ public final class ResourceChartDialogEx extends Dialog {
      */
     public ResourceChartDialogEx(Shell parent) {
         super(parent, SWT.SHELL_TRIM | SWT.MODELESS);
-        this.setText("資材チャート改");
+        this.setText("資材チャート");
     }
 
     /**
@@ -199,7 +199,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.fuelBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.ammoBtn = new Button(checkComposite, SWT.CHECK);
@@ -208,7 +208,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.ammoBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.metalBtn = new Button(checkComposite, SWT.CHECK);
@@ -217,7 +217,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.metalBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.bauxiteBtn = new Button(checkComposite, SWT.CHECK);
@@ -226,7 +226,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.bauxiteBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.bucketBtn = new Button(checkComposite, SWT.CHECK);
@@ -234,7 +234,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.bucketBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.burnerBtn = new Button(checkComposite, SWT.CHECK);
@@ -242,7 +242,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.burnerBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.researchBtn = new Button(checkComposite, SWT.CHECK);
@@ -250,7 +250,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.researchBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
         this.forceZeroBtn = new Button(checkComposite, SWT.CHECK);
@@ -260,7 +260,7 @@ public final class ResourceChartDialogEx extends Dialog {
             public void widgetSelected(SelectionEvent e) {
                 ResourceChartDialogEx.this.yaxis.setForceZeroInRange(ResourceChartDialogEx.this.forceZeroBtn
                         .getSelection());
-                ResourceChartDialogEx.this.changeSeries();
+                ResourceChartDialogEx.this.reload();
             }
         });
 
@@ -279,6 +279,7 @@ public final class ResourceChartDialogEx extends Dialog {
             this.chart.setCreateSymbols(false);
             // アニメーションを有効にするとなぜかaxisの描画が正しく行われない
             this.chart.setAnimated(false);
+            this.chart.getStylesheets().add(AppConstants.CHART_STYLESHEET_FILE.toPath().toUri().toString());
             group.getChildren().add(this.chart);
             // データを用意する
             this.setRange();
@@ -319,7 +320,6 @@ public final class ResourceChartDialogEx extends Dialog {
      */
     private void reload() {
         this.changeRange();
-        this.changeSeries();
     }
 
     /**
@@ -357,29 +357,6 @@ public final class ResourceChartDialogEx extends Dialog {
         this.xaxis.setTickUnit(option.getTickUnit());
         this.xaxis.setTickLabelFormatter(new DateTimeConverter(from, option.getFormat()));
         this.loadSeries(from, to);
-    }
-
-    /**
-     * 表示する資材の種類が変更された時の処理
-     */
-    private void changeSeries() {
-        this.chart.getData().clear();
-        List<XYChart.Series<Number, Number>> list = new ArrayList<>();
-        if (this.fuelBtn.getSelection())
-            list.add(this.fuel);
-        if (this.ammoBtn.getSelection())
-            list.add(this.ammo);
-        if (this.metalBtn.getSelection())
-            list.add(this.metal);
-        if (this.bauxiteBtn.getSelection())
-            list.add(this.bauxite);
-        if (this.bucketBtn.getSelection())
-            list.add(this.bucket);
-        if (this.burnerBtn.getSelection())
-            list.add(this.burner);
-        if (this.researchBtn.getSelection())
-            list.add(this.research);
-        this.chart.getData().addAll(list);
     }
 
     /**
@@ -428,13 +405,7 @@ public final class ResourceChartDialogEx extends Dialog {
         this.bucket = new XYChart.Series<>();
         this.burner = new XYChart.Series<>();
         this.research = new XYChart.Series<>();
-        this.fuel.getData().addAll(fuelList);
-        this.ammo.getData().addAll(ammoList);
-        this.metal.getData().addAll(metalList);
-        this.bauxite.getData().addAll(bauxiteList);
-        this.bucket.getData().addAll(bucketList);
-        this.burner.getData().addAll(burnerList);
-        this.research.getData().addAll(researchList);
+
         this.fuel.setName("燃料");
         this.ammo.setName("弾薬");
         this.metal.setName("鋼材");
@@ -442,6 +413,32 @@ public final class ResourceChartDialogEx extends Dialog {
         this.bucket.setName("高速修復材");
         this.burner.setName("高速建造材");
         this.research.setName("開発資材");
+
+        if (this.fuelBtn.getSelection())
+            this.fuel.getData().addAll(fuelList);
+        if (this.ammoBtn.getSelection())
+            this.ammo.getData().addAll(ammoList);
+        if (this.metalBtn.getSelection())
+            this.metal.getData().addAll(metalList);
+        if (this.bauxiteBtn.getSelection())
+            this.bauxite.getData().addAll(bauxiteList);
+        if (this.bucketBtn.getSelection())
+            this.bucket.getData().addAll(bucketList);
+        if (this.burnerBtn.getSelection())
+            this.burner.getData().addAll(burnerList);
+        if (this.researchBtn.getSelection())
+            this.research.getData().addAll(researchList);
+
+        this.chart.getData().clear();
+        List<XYChart.Series<Number, Number>> list = new ArrayList<>();
+        list.add(this.fuel);
+        list.add(this.ammo);
+        list.add(this.metal);
+        list.add(this.bauxite);
+        list.add(this.bucket);
+        list.add(this.burner);
+        list.add(this.research);
+        this.chart.getData().addAll(list);
     }
 
     /**

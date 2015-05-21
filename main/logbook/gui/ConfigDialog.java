@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import logbook.config.AppConfig;
+import logbook.config.ChartStylesheet;
 import logbook.config.bean.WindowLocationBean;
 import logbook.data.context.GlobalContext;
 import logbook.gui.logic.LayoutLogic;
@@ -816,6 +817,7 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setScriptEngines(engineList.getItems());
                 try {
                     AppConfig.store();
+                    ChartStylesheet.store();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

@@ -353,16 +353,8 @@ public final class ApplicationMain {
         calcexp.addSelectionListener(new CalcExpAdapter(this.shell));
 
         // その他-資材チャート
-        MenuItem resourceChart = new MenuItem(etcmenu, SWT.NONE);
-        resourceChart.setText("資材チャート");
-        resourceChart.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                new ResourceChartDialog(ApplicationMain.this.shell).open();
-            }
-        });
         MenuItem resourceChart2 = new MenuItem(etcmenu, SWT.NONE);
-        resourceChart2.setText("資材チャート改(&R)");
+        resourceChart2.setText("資材チャート(&R)");
         resourceChart2.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
