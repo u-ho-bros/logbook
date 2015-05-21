@@ -53,8 +53,20 @@ public final class GlobalContext {
     /** ロガー */
     private static final Logger LOG = LogManager.getLogger(GlobalContext.class);
 
-    /** コンテキスト */
-    private static final GlobalContext CONTEXT = new GlobalContext();
+    private GlobalContext() {
+    }
+
+    private static class GlobalContextHolder {
+
+        /** イベント送信 */
+        private static final EventSender SENDER = new EventSender();
+
+        static {
+            SENDER.addEventListener(new CallScript());
+            SENDER.addEventListener(new RemodelSlot());
+            SENDER.addEventListener(new Material());
+        }
+    }
 
     /** 建造 */
     private static List<GetShipDto> getShipList = new ArrayList<GetShipDto>();
@@ -118,18 +130,6 @@ public final class GlobalContext {
     /** 連合艦隊 */
     private static boolean combined;
 
-    /** イベント送信 */
-    private final EventSender sender = new EventSender();
-
-    /**
-     * コンストラクタ
-     */
-    public GlobalContext() {
-        this.sender.addEventListener(new CallScript());
-        this.sender.addEventListener(new RemodelSlot());
-        this.sender.addEventListener(new Material());
-    }
-
     /**
      * @return 司令部Lv
      */
@@ -191,6 +191,13 @@ public final class GlobalContext {
      */
     public static NdockDto[] getNdocks() {
         return ndocks;
+    }
+
+    /**
+     * @return イベント送信
+     */
+    public static EventSender getEventSender() {
+        return GlobalContextHolder.SENDER;
     }
 
     /**
@@ -267,7 +274,7 @@ public final class GlobalContext {
         while ((data = DataQueue.poll()) != null) {
             update = true;
 
-            CONTEXT.sender.syncSendEvent(data.getDataType(), data);
+            getEventSender().syncSendEvent(data.getDataType(), data);
 
             switch (data.getDataType()) {
             // 補給
