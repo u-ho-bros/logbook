@@ -50,10 +50,13 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public final class GlobalContext {
-    /** ロガー */
-    private static final Logger LOG = LogManager.getLogger(GlobalContext.class);
 
     private GlobalContext() {
+    }
+
+    private static class LoggerHolder {
+        /** ロガー */
+        private static final Logger LOG = LogManager.getLogger(GlobalContext.class);
     }
 
     private static class GlobalContextHolder {
@@ -445,8 +448,8 @@ public final class GlobalContext {
                 addConsole("補給を更新しました");
             }
         } catch (Exception e) {
-            LOG.warn("補給を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("補給を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -489,8 +492,8 @@ public final class GlobalContext {
                 ShipContext.setSecretary(dock.get("1").getShips().get(0));
             }
         } catch (Exception e) {
-            LOG.warn("編成を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("編成を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -574,8 +577,8 @@ public final class GlobalContext {
                 }
             }
         } catch (Exception e) {
-            LOG.warn("母港を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("母港を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -590,8 +593,8 @@ public final class GlobalContext {
 
             addConsole("海戦情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("海戦情報を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("海戦情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -611,8 +614,8 @@ public final class GlobalContext {
             isStart = false;
             addConsole("海戦情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("海戦情報を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("海戦情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -639,8 +642,8 @@ public final class GlobalContext {
 
             addConsole("建造(投入資源)情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("建造(投入資源)情報を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("建造(投入資源)情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -669,8 +672,8 @@ public final class GlobalContext {
             }
             addConsole("建造を更新しました");
         } catch (Exception e) {
-            LOG.warn("建造を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("建造を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -714,8 +717,8 @@ public final class GlobalContext {
 
             addConsole("建造(入手)情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("建造(入手)情報を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("建造(入手)情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -752,8 +755,8 @@ public final class GlobalContext {
 
             addConsole("装備開発情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("装備開発情報を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("装備開発情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -781,8 +784,8 @@ public final class GlobalContext {
 
             addConsole("保有装備情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("保有装備を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("保有装備を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -818,8 +821,8 @@ public final class GlobalContext {
 
             addConsole("保有艦娘情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("保有艦娘を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("保有艦娘を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -842,8 +845,8 @@ public final class GlobalContext {
 
             addConsole("保有艦娘情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("保有艦娘を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("保有艦娘を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -865,8 +868,8 @@ public final class GlobalContext {
             doDeck(apidata.getJsonArray("api_deck_data"));
 
         } catch (Exception e) {
-            LOG.warn("保有艦娘を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("保有艦娘を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -887,8 +890,8 @@ public final class GlobalContext {
             doDeck(apidata);
             addConsole("艦隊を更新しました");
         } catch (Exception e) {
-            LOG.warn("艦隊を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("艦隊を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -949,8 +952,8 @@ public final class GlobalContext {
 
             addConsole("艦娘を解体しました");
         } catch (Exception e) {
-            LOG.warn("艦娘を解体しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("艦娘を解体しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -967,8 +970,8 @@ public final class GlobalContext {
             }
             addConsole("装備を廃棄しました");
         } catch (Exception e) {
-            LOG.warn("装備を廃棄しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("装備を廃棄しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -993,8 +996,8 @@ public final class GlobalContext {
             }
             addConsole("装備を廃棄しました");
         } catch (Exception e) {
-            LOG.warn("装備を廃棄しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("装備を廃棄しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1010,8 +1013,8 @@ public final class GlobalContext {
 
             addConsole("司令部を更新しました");
         } catch (Exception e) {
-            LOG.warn("司令部を更新するに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("司令部を更新するに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1057,8 +1060,8 @@ public final class GlobalContext {
 
             addConsole("遠征(帰還)情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("遠征(帰還)を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("遠征(帰還)を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1074,8 +1077,8 @@ public final class GlobalContext {
 
             addConsole("入渠情報を更新しました");
         } catch (Exception e) {
-            LOG.warn("入渠を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("入渠を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1134,8 +1137,8 @@ public final class GlobalContext {
             }
             addConsole("任務を更新しました");
         } catch (Exception e) {
-            LOG.warn("任務を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("任務を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1152,8 +1155,8 @@ public final class GlobalContext {
                 questMap.remove(id);
             }
         } catch (Exception e) {
-            LOG.warn("消化した任務を除去しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("消化した任務を除去しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1184,8 +1187,8 @@ public final class GlobalContext {
 
             addConsole("出撃を更新しました");
         } catch (Exception e) {
-            LOG.warn("出撃を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("出撃を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1204,8 +1207,8 @@ public final class GlobalContext {
 
             addConsole("進撃を更新しました");
         } catch (Exception e) {
-            LOG.warn("進撃を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("進撃を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 
@@ -1240,8 +1243,8 @@ public final class GlobalContext {
 
             addConsole("設定を更新しました");
         } catch (Exception e) {
-            LOG.warn("設定を更新しますに失敗しました", e);
-            LOG.warn(data);
+            LoggerHolder.LOG.warn("設定を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
         }
     }
 

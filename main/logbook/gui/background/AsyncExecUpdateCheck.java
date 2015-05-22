@@ -18,7 +18,10 @@ import org.eclipse.swt.widgets.Shell;
  */
 public final class AsyncExecUpdateCheck implements Runnable {
 
-    private static final Logger LOG = LogManager.getLogger(AsyncExecUpdateCheck.class);
+    private static class LoggerHolder {
+        /** ロガー */
+        private static final Logger LOG = LogManager.getLogger(AsyncExecUpdateCheck.class);
+    }
 
     private final Shell shell;
 
@@ -60,7 +63,7 @@ public final class AsyncExecUpdateCheck implements Runnable {
                             try {
                                 Desktop.getDesktop().browse(AppConstants.HOME_PAGE_URI);
                             } catch (Exception e) {
-                                LOG.warn("ウェブサイトに移動が失敗しました", e);
+                                LoggerHolder.LOG.warn("ウェブサイトに移動が失敗しました", e);
                             }
                         }
                     }
@@ -68,7 +71,7 @@ public final class AsyncExecUpdateCheck implements Runnable {
             }
         } catch (Exception e) {
             // アップデートチェック失敗はクラス名のみ
-            LOG.info(e.getClass().getName() + "が原因でアップデートチェックに失敗しました");
+            LoggerHolder.LOG.info(e.getClass().getName() + "が原因でアップデートチェックに失敗しました");
         }
     }
 }

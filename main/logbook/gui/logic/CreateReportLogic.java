@@ -41,8 +41,10 @@ import org.apache.logging.log4j.Logger;
  */
 public final class CreateReportLogic {
 
-    /** ロガー */
-    private static final Logger LOG = LogManager.getLogger(CreateReportLogic.class);
+    private static class LoggerHolder {
+        /** ロガー */
+        private static final Logger LOG = LogManager.getLogger(CreateReportLogic.class);
+    }
 
     /**
      * ドロップ報告書のヘッダー
@@ -586,7 +588,7 @@ public final class CreateReportLogic {
                     CreateReportLogic.getBattleResultStoreHeader(),
                     CreateReportLogic.getBattleResultStoreBody(dtoList), true);
         } catch (IOException e) {
-            LOG.warn("報告書の保存に失敗しました", e);
+            LoggerHolder.LOG.warn("報告書の保存に失敗しました", e);
         }
     }
 
@@ -605,7 +607,7 @@ public final class CreateReportLogic {
                     CreateReportLogic.getCreateShipHeader(),
                     CreateReportLogic.getCreateShipBody(dtoList), true);
         } catch (IOException e) {
-            LOG.warn("報告書の保存に失敗しました", e);
+            LoggerHolder.LOG.warn("報告書の保存に失敗しました", e);
         }
     }
 
@@ -624,7 +626,7 @@ public final class CreateReportLogic {
                     CreateReportLogic.getCreateItemHeader(),
                     CreateReportLogic.getCreateItemBody(dtoList), true);
         } catch (IOException e) {
-            LOG.warn("報告書の保存に失敗しました", e);
+            LoggerHolder.LOG.warn("報告書の保存に失敗しました", e);
         }
     }
 
@@ -643,7 +645,7 @@ public final class CreateReportLogic {
                     CreateReportLogic.getCreateMissionResultHeader(),
                     CreateReportLogic.getMissionResultBody(dtoList), true);
         } catch (IOException e) {
-            LOG.warn("報告書の保存に失敗しました", e);
+            LoggerHolder.LOG.warn("報告書の保存に失敗しました", e);
         }
     }
 
@@ -662,7 +664,7 @@ public final class CreateReportLogic {
                     CreateReportLogic.getMaterialHeader(),
                     CreateReportLogic.getMaterialStoreBody(dtoList), true);
         } catch (IOException e) {
-            LOG.warn("報告書の保存に失敗しました", e);
+            LoggerHolder.LOG.warn("報告書の保存に失敗しました", e);
         }
     }
 }

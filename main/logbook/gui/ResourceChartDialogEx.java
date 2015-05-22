@@ -68,8 +68,12 @@ public final class ResourceChartDialogEx extends Dialog {
     static {
         Platform.setImplicitExit(false);
     }
-    /** ロガー */
-    private static final Logger LOG = LogManager.getLogger(ResourceChartDialogEx.class);
+
+    private static class LoggerHolder {
+        /** ロガー */
+        private static final Logger LOG = LogManager.getLogger(ResourceChartDialogEx.class);
+    }
+
     /** 資材テーブルに表示する資材のフォーマット */
     private static final String COMPARE_FORMAT = "{0,number,0}({1,number,+0;-0})";
 
@@ -291,7 +295,7 @@ public final class ResourceChartDialogEx extends Dialog {
                     this.shell.getBackground().getBlue()));
             this.fxCanvas.setScene(scene);
         } catch (Exception e) {
-            LOG.warn("資材チャートを作成中に例外が発生しました", e);
+            LoggerHolder.LOG.warn("資材チャートを作成中に例外が発生しました", e);
         }
 
         Composite compositeTable = new Composite(sashForm, SWT.NONE);
@@ -311,7 +315,7 @@ public final class ResourceChartDialogEx extends Dialog {
             this.setTableBody();
             this.packTableHeader();
         } catch (Exception e) {
-            LOG.warn("資材ログのテーブルを作成中例外が発生しました", e);
+            LoggerHolder.LOG.warn("資材ログのテーブルを作成中例外が発生しました", e);
         }
     }
 
@@ -395,7 +399,7 @@ public final class ResourceChartDialogEx extends Dialog {
                                 });
             }
         } catch (Exception e) {
-            LOG.warn("資材チャートの読み込み中に例外が発生しました", e);
+            LoggerHolder.LOG.warn("資材チャートの読み込み中に例外が発生しました", e);
         }
 
         this.fuel = new XYChart.Series<>();
@@ -594,14 +598,14 @@ public final class ResourceChartDialogEx extends Dialog {
                 this.burner = Integer.parseInt(cols[6]);
                 this.research = Integer.parseInt(cols[7]);
             } catch (ParseException e) {
-                LOG.warn("資材ログを読み込み中に例外が発生しました:日付の形式が間違っています", e);
-                LOG.warn(line);
+                LoggerHolder.LOG.warn("資材ログを読み込み中に例外が発生しました:日付の形式が間違っています", e);
+                LoggerHolder.LOG.warn(line);
             } catch (NumberFormatException e) {
-                LOG.warn("資材ログを読み込み中に例外が発生しました:数値型に変換出来ません", e);
-                LOG.warn(line);
+                LoggerHolder.LOG.warn("資材ログを読み込み中に例外が発生しました:数値型に変換出来ません", e);
+                LoggerHolder.LOG.warn(line);
             } catch (IndexOutOfBoundsException e) {
-                LOG.warn("資材ログを読み込み中に例外が発生しました:項目数が一致しません", e);
-                LOG.warn(line);
+                LoggerHolder.LOG.warn("資材ログを読み込み中に例外が発生しました:項目数が一致しません", e);
+                LoggerHolder.LOG.warn(line);
             }
         }
     }

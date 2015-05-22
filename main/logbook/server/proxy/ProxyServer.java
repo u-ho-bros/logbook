@@ -17,7 +17,10 @@ import org.eclipse.swt.widgets.Shell;
  */
 public final class ProxyServer extends Thread {
 
-    private static final Logger LOG = LogManager.getLogger(ProxyServer.class);
+    private static class LoggerHolder {
+        /** ロガー */
+        private static final Logger LOG = LogManager.getLogger(ProxyServer.class);
+    }
 
     private final int port;
     private final Shell shell;
@@ -54,7 +57,7 @@ public final class ProxyServer extends Thread {
                 this.server.stop();
             }
         } catch (Exception e) {
-            LOG.fatal("サーバーの起動に失敗しました", e);
+            LoggerHolder.LOG.fatal("サーバーの起動に失敗しました", e);
             throw new RuntimeException(e);
         }
     }
