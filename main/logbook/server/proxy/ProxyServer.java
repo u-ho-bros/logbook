@@ -5,7 +5,9 @@ import java.net.BindException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -25,8 +27,6 @@ public final class ProxyServer extends Thread {
     private final int port;
     private final Shell shell;
 
-    private Server server;
-
     public ProxyServer(int port, Shell shell) {
         this.port = port;
         this.shell = shell;
@@ -36,25 +36,29 @@ public final class ProxyServer extends Thread {
     @Override
     public void run() {
         try {
-            this.server = new Server(this.port);
+            Server server = new Server();
+            ServerConnector connector = new ServerConnector(server);
+            connector.setPort(this.port);
+            server.addConnector(connector);
 
-            ServletHandler servletHandler = new ServletHandler();
-            servletHandler.addServletWithMapping(ReverseProxyServlet.class, "/*");
-            servletHandler.setServer(this.server);
+            ServletHandler context = new ServletHandler();
+            ServletHolder holder = new ServletHolder(new ReverseProxyServlet());
+            holder.setInitParameter("maxThreads", "256");
+            context.addServletWithMapping(holder, "/*");
+            server.setHandler(context);
 
-            this.server.setHandler(servletHandler);
             try {
                 try {
-                    this.server.start();
+                    server.start();
                     try {
-                        this.server.join();
+                        server.join();
                     } catch (InterruptedException e) {
                     }
                 } catch (Exception e) {
                     this.handle(e);
                 }
             } finally {
-                this.server.stop();
+                server.stop();
             }
         } catch (Exception e) {
             LoggerHolder.LOG.fatal("サーバーの起動に失敗しました", e);
