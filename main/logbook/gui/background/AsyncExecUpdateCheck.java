@@ -1,6 +1,7 @@
 package logbook.gui.background;
 
 import java.awt.Desktop;
+import java.text.MessageFormat;
 
 import logbook.constants.AppConstants;
 
@@ -23,6 +24,11 @@ public final class AsyncExecUpdateCheck implements Runnable {
         private static final Logger LOG = LogManager.getLogger(AsyncExecUpdateCheck.class);
     }
 
+    private static final String MESSAGE = "新しいバージョンがあります。ダウンロードサイトを開きますか？\r\n"
+            + "現在のバージョン:" + AppConstants.VERSION + "\r\n"
+            + "新しいバージョン:{0}\r\n"
+            + "※自動アップデートチェックは[その他]-[設定]からOFFに出来ます";
+
     private final Shell shell;
 
     /**
@@ -37,41 +43,29 @@ public final class AsyncExecUpdateCheck implements Runnable {
     @Override
     public void run() {
         try {
-            final String newversion = IOUtils.toString(AppConstants.UPDATE_CHECK_URI);
+            String newversion = IOUtils.toString(AppConstants.UPDATE_CHECK_URI);
 
             if (!AppConstants.VERSION.equals(newversion)) {
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        Shell shell = AsyncExecUpdateCheck.this.shell;
-
-                        if (shell.isDisposed()) {
-                            // ウインドウが閉じられていたらなにもしない
-                            return;
-                        }
-
-                        MessageBox box = new MessageBox(shell, SWT.YES | SWT.NO
+                Display.getDefault().asyncExec(() -> {
+                    if (!this.shell.isDisposed()) {
+                        MessageBox box = new MessageBox(this.shell, SWT.YES | SWT.NO
                                 | SWT.ICON_QUESTION);
                         box.setText("新しいバージョン");
-                        box.setMessage("新しいバージョンがあります。ダウンロードサイトを開きますか？\r\n"
-                                + "現在のバージョン:" + AppConstants.VERSION + "\r\n"
-                                + "新しいバージョン:" + newversion + "\r\n"
-                                + "※自動アップデートチェックは[その他]-[設定]からOFFに出来ます");
+                        box.setMessage(MessageFormat.format(MESSAGE, newversion));
 
-                        // OKを押されたらホームページへ移動する
+                        // OKを押されたらダウンロードサイトへ移動する
                         if (box.open() == SWT.YES) {
                             try {
                                 Desktop.getDesktop().browse(AppConstants.HOME_PAGE_URI);
                             } catch (Exception e) {
-                                LoggerHolder.LOG.warn("ウェブサイトに移動が失敗しました", e);
+                                LoggerHolder.LOG.warn("ダウンロードサイトに移動が失敗しました", e);
                             }
                         }
                     }
                 });
             }
         } catch (Exception e) {
-            // アップデートチェック失敗はクラス名のみ
-            LoggerHolder.LOG.info(e.getClass().getName() + "が原因でアップデートチェックに失敗しました");
+            LoggerHolder.LOG.info(e.toString() + "が原因でアップデートチェックに失敗しました");
         }
     }
 }
