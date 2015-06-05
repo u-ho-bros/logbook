@@ -17,7 +17,7 @@ public class AppConstants {
     public static final String NAME = "航海日誌";
 
     /** バージョン */
-    public static final String VERSION = "0.8.6";
+    public static final String VERSION = "0.8.7";
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://kancolle.sanaechan.net/");
@@ -168,6 +168,18 @@ public class AppConstants {
 
     /** /resources/icon/star.png */
     public static final String R_ICON_STAR = "/resources/icon/star.png";
+
+    /** /resources/icon/expedition.png */
+    public static final String R_ICON_EXPEDITION = "/resources/icon/expedition.png";
+
+    /** /resources/icon/expedition_mono.png */
+    public static final String R_ICON_EXPEDITION_MONO = "/resources/icon/expedition_mono.png";
+
+    /** /resources/icon/cond_upper50.png */
+    public static final String R_ICON_COND_UPPER50 = "/resources/icon/cond_upper50.png";
+
+    /** /resources/icon/expedition_mono.png */
+    public static final String R_ICON_COND_UPPER50_MONO = "/resources/icon/cond_upper50_mono.png";
 
     /** 艦隊タブの艦娘ラベルに設定するツールチップテキスト */
     public static final String TOOLTIP_FLEETTAB_SHIP = "HP:{0}/{1} 燃料:{2}/{3} 弾:{4}/{5}\nNext:{6}exp";

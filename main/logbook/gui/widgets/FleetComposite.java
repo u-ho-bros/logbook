@@ -57,6 +57,8 @@ public class FleetComposite extends Composite {
     private static final int WARN = 1;
     /** 致命的 */
     private static final int FATAL = 2;
+    /** 疲労50以上 */
+    private static final int COND_UPPER50 = 0;
     /** 1艦隊に編成できる艦娘の数 */
     private static final int MAXCHARA = 6;
 
@@ -316,6 +318,13 @@ public class FleetComposite extends Composite {
         this.message.setText("");
 
         List<ShipDto> ships = dock.getShips();
+        // 艦隊コンディション初期値セット
+        if (ships.size() > 0) {
+            this.state.set(COND_UPPER50, true);
+        } else {
+            this.state.set(COND_UPPER50, false);
+        }
+
         for (int i = ships.size(); i < MAXCHARA; i++) {
             this.iconLabels[i].setImage(null);
             this.nameLabels[i].setText("");
@@ -534,15 +543,18 @@ public class FleetComposite extends Composite {
             } else {
                 this.condLabels[i].setForeground(null);
                 this.condstLabels[i].setForeground(null);
+                this.state.set(COND_UPPER50, false);
             }
 
             // 艦娘の状態アイコンを更新
             if (shipstatus.get(FATAL)) {
+                //致命的
                 this.iconLabels[i].setImage(SWTResourceManager.getImage(FleetComposite.class,
                         AppConfig.get().isMonoIcon()
                                 ? AppConstants.R_ICON_EXCLAMATION_MONO
                                 : AppConstants.R_ICON_EXCLAMATION));
             } else if (shipstatus.get(WARN)) {
+                //警告
                 this.iconLabels[i].setImage(SWTResourceManager.getImage(FleetComposite.class,
                         AppConfig.get().isMonoIcon()
                                 ? AppConstants.R_ICON_ERROR_MONO
@@ -662,7 +674,12 @@ public class FleetComposite extends Composite {
      * 艦隊タブのアイコンを更新します
      */
     private void updateTabIcon() {
-        if (this.state.get(FATAL)) {
+        if (GlobalContext.isMission(this.dock.getId())) {
+            this.tab.setImage(SWTResourceManager.getImage(FleetComposite.class,
+                    AppConfig.get().isMonoIcon()
+                            ? AppConstants.R_ICON_EXPEDITION_MONO
+                            : AppConstants.R_ICON_EXPEDITION));
+        } else if (this.state.get(FATAL)) {
             this.tab.setImage(SWTResourceManager.getImage(FleetComposite.class,
                     AppConfig.get().isMonoIcon()
                             ? AppConstants.R_ICON_EXCLAMATION_MONO
@@ -672,9 +689,14 @@ public class FleetComposite extends Composite {
                     AppConfig.get().isMonoIcon()
                             ? AppConstants.R_ICON_ERROR_MONO
                             : AppConstants.R_ICON_ERROR));
-        } else {
+        } else if (this.state.get(COND_UPPER50)) {
+            this.tab.setImage(SWTResourceManager.getImage(FleetComposite.class,
+                    AppConfig.get().isMonoIcon()
+                            ? AppConstants.R_ICON_COND_UPPER50_MONO
+                            : AppConstants.R_ICON_COND_UPPER50));
+        } else
+
             this.tab.setImage(null);
-        }
     }
 
     /**
