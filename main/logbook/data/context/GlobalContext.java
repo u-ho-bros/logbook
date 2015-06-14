@@ -770,6 +770,7 @@ public final class GlobalContext {
             JsonArray apidata = data.getJsonObject().getJsonArray("api_data");
             // 破棄
             ItemContext.get().clear();
+            ItemContext.level().clear();
             for (int i = 0; i < apidata.size(); i++) {
                 JsonObject object = (JsonObject) apidata.get(i);
                 int typeid = object.getJsonNumber("api_slotitem_id").intValue();
@@ -941,6 +942,7 @@ public final class GlobalContext {
                 List<Long> items = ship.getItemId();
                 for (Long item : items) {
                     ItemContext.get().remove(item);
+                    ItemContext.level().remove(item);
                 }
                 // 艦娘を外す
                 ShipContext.get().remove(ship.getId());
@@ -967,6 +969,7 @@ public final class GlobalContext {
             for (String itemid : itemids.split(",")) {
                 Long item = Long.parseLong(itemid);
                 ItemContext.get().remove(item);
+                ItemContext.level().remove(item);
             }
             addConsole("装備を廃棄しました");
         } catch (Exception e) {
@@ -989,6 +992,7 @@ public final class GlobalContext {
                     List<Long> items = ship.getItemId();
                     for (Long item : items) {
                         ItemContext.get().remove(item);
+                        ItemContext.level().remove(item);
                     }
                     // 艦娘を外す
                     ShipContext.get().remove(ship.getId());
