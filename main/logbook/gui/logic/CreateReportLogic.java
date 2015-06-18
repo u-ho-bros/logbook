@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import logbook.config.QuestConfig;
+import logbook.config.bean.QuestBean;
 import logbook.constants.AppConstants;
 import logbook.data.context.GlobalContext;
 import logbook.data.context.ItemContext;
@@ -309,7 +311,7 @@ public final class CreateReportLogic {
      */
     public static String[] getShipListHeader() {
         return new String[] { "", "ID", "艦隊", "名前", "艦種", "疲労", "回復", "Lv", "Next", "経験値", "出撃海域", "制空", "装備1", "装備2",
-                "装備3", "装備4", "HP", "火力", "雷装", "対空", "装甲", "回避", "対潜", "索敵", "運",
+                "装備3", "装備4", "現在HP", "最大HP", "状態", "火力", "雷装", "対空", "装甲", "回避", "対潜", "索敵", "運",
                 "装備命中", "砲撃戦火力", "雷撃戦火力", "対潜火力", "夜戦火力" };
     }
 
@@ -333,6 +335,17 @@ public final class CreateReportLogic {
 
             count++;
 
+            // 状態
+            String status = "";
+
+            if (ship.isBadlyDamage()) {
+                status = "大破";
+            } else if (ship.isHalfDamage()) {
+                status = "中破";
+            } else if (ship.isSlightDamage()) {
+                status = "小破";
+            }
+
             if (!specdiff) {
                 // 通常
                 body.add(new Object[] {
@@ -352,7 +365,9 @@ public final class CreateReportLogic {
                         ship.getSlot().get(1),
                         ship.getSlot().get(2),
                         ship.getSlot().get(3),
+                        ship.getNowhp(),
                         ship.getMaxhp(),
+                        status,
                         ship.getKaryoku(),
                         ship.getRaisou(),
                         ship.getTaiku(),
@@ -415,7 +430,9 @@ public final class CreateReportLogic {
                         ship.getSlot().get(1),
                         ship.getSlot().get(2),
                         ship.getSlot().get(3),
+                        ship.getNowhp(),
                         ship.getMaxhp(),
+                        status,
                         karyoku,
                         raisou,
                         taiku,
@@ -475,7 +492,9 @@ public final class CreateReportLogic {
      * @return
      */
     public static String[] getCreateQuestHeader() {
-        return new String[] { "", "状態", "タイトル", "内容", "燃料", "弾薬", "鋼材", "ボーキ" };
+        return new String[] { "", "状態", "タイトル", "内容", "燃料", "弾薬", "鋼材", "ボーキ", "期限", "出撃", "戦闘勝利", "戦闘S",
+                "ボス到達", "ボス勝利", "1-4S", "1-5A", "南西", "3-3+", "西方", "4-4", "5-2S", "6-1S", "補給艦", "空母", "潜水艦",
+                "演習", "演習勝利", "遠征", "建造", "開発", "解体", "廃棄", "補給", "入渠", "改修" };
     }
 
     /**
@@ -486,8 +505,13 @@ public final class CreateReportLogic {
     public static List<String[]> getQuestBody() {
         List<Object[]> body = new ArrayList<Object[]>();
 
+        SimpleDateFormat format = new SimpleDateFormat(AppConstants.DATE_FORMAT);
+
         for (Entry<Integer, QuestDto> entry : GlobalContext.getQuest().entrySet()) {
             QuestDto quest = entry.getValue();
+            QuestBean bean = QuestConfig.get(quest.getNo());
+            if (bean == null)
+                bean = new QuestBean();
 
             String state = "";
             switch (quest.getState()) {
@@ -497,9 +521,10 @@ public final class CreateReportLogic {
             case 3:
                 state = "達成";
                 break;
-            default:
-                continue;
             }
+            String due = "";
+            if (bean.getDue() != null)
+                due = format.format(bean.getDue());
 
             body.add(new Object[] {
                     quest.getNo(),
@@ -509,7 +534,34 @@ public final class CreateReportLogic {
                     quest.getFuel(),
                     quest.getAmmo(),
                     quest.getMetal(),
-                    quest.getBauxite()
+                    quest.getBauxite(),
+                    due,
+                    bean.getSortie().size(),
+                    bean.getBattleWin().size(),
+                    bean.getBattleWinS().size(),
+                    bean.getBossArrive().size(),
+                    bean.getBossWin().size(),
+                    bean.getBoss1_4WinS().size(),
+                    bean.getBoss1_5WinA().size(),
+                    bean.getBoss2Win().size(),
+                    bean.getBoss3_3pWin().size(),
+                    bean.getBoss4Win().size(),
+                    bean.getBoss4_4Win().size(),
+                    bean.getBoss5_2WinS().size(),
+                    bean.getBoss6_1WinS().size(),
+                    bean.getDefeatAP().size(),
+                    bean.getDefeatCV().size(),
+                    bean.getDefeatSS().size(),
+                    bean.getPractice().size(),
+                    bean.getPracticeWin().size(),
+                    bean.getMissionSuccess().size(),
+                    bean.getCreateShip().size(),
+                    bean.getCreateItem().size(),
+                    bean.getDestroyShip().size(),
+                    bean.getDestroyItem().size(),
+                    bean.getCharge().size(),
+                    bean.getRepair().size(),
+                    bean.getPowerUp().size()
             });
         }
         return toListStringArray(body);

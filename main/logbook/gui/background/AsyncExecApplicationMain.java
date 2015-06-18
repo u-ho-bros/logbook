@@ -182,6 +182,10 @@ public final class AsyncExecApplicationMain extends Thread {
 
         private final ApplicationMain main;
 
+        private static ToolTip tip = null;
+
+        private static Date last = null;
+
         /** 日付フォーマット */
         private final SimpleDateFormat format = new SimpleDateFormat(AppConstants.DATE_SHORT_FORMAT);
 
@@ -196,15 +200,17 @@ public final class AsyncExecApplicationMain extends Thread {
         public void run() {
             // 現在時刻
             Date now = Calendar.getInstance().getTime();
-            List<String> notice = new ArrayList<String>();
+            boolean noticeflg = false;
             boolean visibleHome = false;
             // 遠征を更新する
-            if (this.updateDeck(now, notice)) {
+            if (this.updateDeck(now)) {
+                noticeflg = true;
                 PlayerThread.randomExpeditionSoundPlay();
                 visibleHome |= AppConfig.get().isVisibleOnReturnMission();
             }
             // 入渠を更新する
-            if (this.updateNdock(now, notice)) {
+            if (this.updateNdock(now)) {
+                noticeflg = true;
                 PlayerThread.randomDockSoundPlay();
                 visibleHome |= AppConfig.get().isVisibleOnReturnBathwater();
             }
@@ -215,9 +221,32 @@ public final class AsyncExecApplicationMain extends Thread {
                 // バルーンツールチップを表示する
                 try {
                     // 遠征・入渠のお知らせ
-                    if (notice.size() > 0) {
-                        ToolTip tip = new ToolTip(this.main.getShell(), SWT.BALLOON
-                                | SWT.ICON_INFORMATION);
+                    if (noticeflg) {
+                        last = now;
+                        List<String> notice = new ArrayList<String>();
+
+                        DeckMissionDto[] deckMissions = GlobalContext.getDeckMissions();
+                        for (int i = 0; i < deckMissions.length; i++) {
+                            if (FLAG_NOTICE_DECK[i] && (deckMissions[i].getMission() != null)) {
+                                notice.add(deckMissions[i].getName() + " (" + deckMissions[i].getMission() + ")"
+                                        + " がまもなく帰投します");
+                            }
+                        }
+
+                        Map<Long, ShipDto> shipMap = ShipContext.get();
+                        NdockDto[] ndocks = GlobalContext.getNdocks();
+                        for (int i = 0; i < ndocks.length; i++) {
+                            if (FLAG_NOTICE_NDOCK[i] && (ndocks[i].getNdockid() != 0)) {
+                                ShipDto ship = shipMap.get(Long.valueOf(ndocks[i].getNdockid()));
+                                if (ship != null) {
+                                    notice.add(ship.getName() + " (Lv" + ship.getLv() + ")" + " がまもなくお風呂からあがります");
+                                }
+                            }
+                        }
+
+                        if ((tip == null) || !tip.isVisible()) {
+                            tip = new ToolTip(this.main.getShell(), SWT.BALLOON | SWT.ICON_INFORMATION);
+                        }
                         tip.setText("遠征・入渠");
                         tip.setMessage(StringUtils.join(notice, "\r\n"));
                         this.main.getTrayItem().setToolTip(tip);
@@ -236,8 +265,9 @@ public final class AsyncExecApplicationMain extends Thread {
          * @param notice
          * @return
          */
-        private boolean updateDeck(Date now, List<String> notice) {
+        private boolean updateDeck(Date now) {
             boolean noticeflg = false;
+            boolean remind = false;
 
             Label[] deckNameLabels = { this.main.getDeck1name(), this.main.getDeck2name(), this.main.getDeck3name() };
             Text[] deckTimeTexts = { this.main.getDeck1time(), this.main.getDeck2time(), this.main.getDeck3time() };
@@ -271,14 +301,11 @@ public final class AsyncExecApplicationMain extends Thread {
                         }
                         if (this.main.getDeckNotice().getSelection()) {
                             if ((rest <= ONE_MINUTES) && !FLAG_NOTICE_DECK[i]) {
-                                notice.add(dispname + " がまもなく帰投します");
                                 noticeflg = true;
                                 FLAG_NOTICE_DECK[i] = true;
-                            } else if (AppConfig.get().isMissionRemind() && (rest < -1)
-                                    && ((rest % AppConfig.get().getRemindInterbal()) == 0)) {
-                                // 定期的にリマインドする
-                                notice.add(dispname + " がまもなく帰投します");
-                                noticeflg = true;
+                            } else if (AppConfig.get().isMissionRemind() && (rest < -1)) {
+                                // リマインドする
+                                remind = true;
                             } else if (rest > ONE_MINUTES) {
                                 FLAG_NOTICE_DECK[i] = false;
                             }
@@ -291,11 +318,17 @@ public final class AsyncExecApplicationMain extends Thread {
                         }
                     }
                 } else {
+                    FLAG_NOTICE_DECK[i] = false;
                     deckTimeTexts[i].setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
                     deckTimeTexts[i].setToolTipText(null);
                 }
                 deckNameLabels[i].setText(dispname);
                 deckTimeTexts[i].setText(time);
+            }
+            if (remind && (last != null) && AppConfig.get().isMissionRemind()
+                    && ((getRest(now, last) % AppConfig.get().getRemindInterbal()) == 0)) {
+                // 定期的にリマインドする
+                noticeflg = true;
             }
             return noticeflg;
         }
@@ -307,7 +340,7 @@ public final class AsyncExecApplicationMain extends Thread {
          * @param notice
          * @return
          */
-        private boolean updateNdock(Date now, List<String> notice) {
+        private boolean updateNdock(Date now) {
             boolean noticeflg = false;
 
             Map<Long, ShipDto> shipMap = ShipContext.get();
@@ -349,7 +382,6 @@ public final class AsyncExecApplicationMain extends Thread {
                         if (this.main.getNdockNotice().getSelection()) {
 
                             if ((rest <= ONE_MINUTES) && !FLAG_NOTICE_NDOCK[i]) {
-                                notice.add(name + " がまもなくお風呂からあがります");
                                 noticeflg = true;
                                 FLAG_NOTICE_NDOCK[i] = true;
                             } else if (rest > ONE_MINUTES) {
@@ -364,6 +396,7 @@ public final class AsyncExecApplicationMain extends Thread {
                         }
                     }
                 } else {
+                    FLAG_NOTICE_NDOCK[i] = false;
                     ndockTimeTexts[i].setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
                     ndockTimeTexts[i].setToolTipText(null);
                 }

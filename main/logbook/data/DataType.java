@@ -19,6 +19,8 @@ public enum DataType {
     SHIP2("/kcsapi/api_get_member/ship2"),
     /** 保有艦 */
     SHIP3("/kcsapi/api_get_member/ship3"),
+    /** 遠征 */
+    MISSION_START("/kcsapi/api_req_mission/start"),
     /** 保有艦 */
     SHIP_DECK("/kcsapi/api_get_member/ship_deck"),
     /** 遠征(帰還) */
@@ -81,6 +83,10 @@ public enum DataType {
     QUEST_CLEAR("/kcsapi/api_req_quest/clearitemget"),
     /** 設定 */
     START2("/kcsapi/api_start2"),
+    /** 演習結果 */
+    PRACTICE_RESULT("/kcsapi/api_req_practice/battle_result"),
+    /** 入渠 */
+    NYUKYO("/kcsapi/api_req_nyukyo/start"),
     /** 装備改修一覧 */
     REMODEL_SLOTLIST("/kcsapi/api_req_kousyou/remodel_slotlist"),
     /** 装備改修 */
@@ -95,7 +101,6 @@ public enum DataType {
     PAYITEM("/kcsapi/api_get_member/payitem"),
     /** 模様替え */
     FURNITURE("/kcsapi/api_req_furniture/change"),
-
     /** フィルタ前のデータ */
     UNDEFINED(null);
 

@@ -2,6 +2,7 @@ package logbook.data.context;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -16,7 +17,11 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import logbook.config.AppConfig;
 import logbook.config.KdockConfig;
+import logbook.config.QuestConfig;
+import logbook.config.bean.QuestBean;
+import logbook.constants.AppConstants;
 import logbook.data.Data;
 import logbook.data.DataQueue;
 import logbook.data.EventSender;
@@ -36,14 +41,22 @@ import logbook.dto.QuestDto;
 import logbook.dto.ResourceDto;
 import logbook.dto.ShipDto;
 import logbook.dto.ShipInfoDto;
+import logbook.gui.ApplicationMain;
 import logbook.gui.logic.CreateReportLogic;
 import logbook.internal.Deck;
 import logbook.internal.Item;
+import logbook.internal.QuestDue;
 import logbook.internal.Ship;
 import logbook.internal.ShipStyle;
+import logbook.internal.SortiePhase;
+import logbook.thread.PlayerThread;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ToolTip;
 
 /**
  * 遠征・入渠などの情報を管理します
@@ -99,7 +112,16 @@ public final class GlobalContext {
     private static String lastBuildKdock;
 
     /** 戦闘詳細 */
-    private static BattleDto battle = null;
+    private static List<BattleDto> battleList = new ArrayList<BattleDto>();
+
+    /** ボス戦 */
+    private static boolean bossArrive = false;
+
+    /** 出撃 */
+    private static SortiePhase sortiePhase = SortiePhase.BATTLE_RESULT;
+
+    /** 戦闘回数 */
+    private static int battleCount = 0;
 
     /** 遠征リスト */
     private static DeckMissionDto[] deckMissions = new DeckMissionDto[] { DeckMissionDto.EMPTY, DeckMissionDto.EMPTY,
@@ -121,6 +143,12 @@ public final class GlobalContext {
     /** 出撃(START)か */
     private static boolean isStart;
 
+    /** 今いるマップ上のエリアNo */
+    private static int mapAreaNo;
+
+    /** 今いるマップ上のマップNo */
+    private static int mapInfoNo;
+
     /** 今いるマップ上のマスNo */
     private static int mapCellNo;
 
@@ -131,7 +159,52 @@ public final class GlobalContext {
     private static int eventId;
 
     /** 連合艦隊 */
-    private static boolean combined;
+    private static int combined;
+
+    /** イベント送信 */
+    private final EventSender sender = new EventSender();
+
+    /**
+     * @return エリアNo
+     */
+    public static int getMapAreaNo() {
+        return mapAreaNo;
+    }
+
+    /**
+     * @return マップNo
+     */
+    public static int getMapInfoNo() {
+        return mapInfoNo;
+    }
+
+    /**
+     * @return マスNo
+     */
+    public static int getMapCellNo() {
+        return mapCellNo;
+    }
+
+    /**
+     * @return ボス到着
+     */
+    public static boolean isBossArrive() {
+        return bossArrive;
+    }
+
+    /**
+     * @return 出撃
+     */
+    public static SortiePhase getSortiePhase() {
+        return sortiePhase;
+    }
+
+    /**
+     * @return 戦闘回数
+     */
+    public static int getBattleCount() {
+        return battleCount;
+    }
 
     /**
      * @return 司令部Lv
@@ -166,6 +239,13 @@ public final class GlobalContext {
      */
     public static List<CreateItemDto> getCreateItemList() {
         return createItemList;
+    }
+
+    /**
+     * @return 海戦List
+     */
+    public static List<BattleDto> getBattleList() {
+        return battleList;
     }
 
     /**
@@ -312,6 +392,10 @@ public final class GlobalContext {
             case BASIC:
                 doBasic(data);
                 break;
+            // 遠征
+            case MISSION_START:
+                doMission(data);
+                break;
             // 遠征(帰還)
             case MISSION_RESULT:
                 doMissionResult(data);
@@ -353,8 +437,12 @@ public final class GlobalContext {
                 doBattle(data);
                 break;
             // 海戦
+            case BATTLE_MIDNIGHT:
+                doBattleNight(data);
+                break;
+            // 海戦
             case BATTLE_SP_MIDNIGHT:
-                doBattle(data);
+                doBattleNight(data);
                 break;
             // 海戦
             case BATTLE_NIGHT_TO_DAY:
@@ -375,6 +463,14 @@ public final class GlobalContext {
             // 海戦
             case COMBINED_BATTLE_WATER:
                 doBattle(data);
+                break;
+            // 海戦
+            case COMBINED_BATTLE_MIDNIGHT:
+                doBattleNight(data);
+                break;
+            // 海戦
+            case COMBINED_BATTLE_SP_MIDNIGHT:
+                doBattleNight(data);
                 break;
             // 海戦結果
             case BATTLE_RESULT:
@@ -407,6 +503,14 @@ public final class GlobalContext {
             // 設定
             case START2:
                 doStart2(data);
+                break;
+            // 演習結果
+            case PRACTICE_RESULT:
+                doPracticeResult(data);
+                break;
+            // 入渠
+            case NYUKYO:
+                doNyukyo(data);
                 break;
             default:
                 break;
@@ -445,6 +549,14 @@ public final class GlobalContext {
                         }
                     }
                 }
+                Date now = new Date();
+                for (Integer no : QuestConfig.getNoList()) {
+                    QuestBean bean = QuestConfig.get(no);
+                    if ((bean != null) && bean.getExecuting()) {
+                        bean.countCharge(now);
+                    }
+                }
+                QuestConfig.store();
                 addConsole("補給を更新しました");
             }
         } catch (Exception e) {
@@ -532,47 +644,18 @@ public final class GlobalContext {
                 deckMissions = new DeckMissionDto[] { DeckMissionDto.EMPTY, DeckMissionDto.EMPTY, DeckMissionDto.EMPTY };
                 for (int i = 1; i < apiDeckPort.size(); i++) {
                     JsonObject object = (JsonObject) apiDeckPort.get(i);
-                    String name = object.getString("api_name");
                     JsonArray jmission = object.getJsonArray("api_mission");
-
                     int section = ((JsonNumber) jmission.get(1)).intValue();
-                    String mission = null;
-                    if (section != 0) {
-                        mission = Deck.get(section);
-                        if (mission == null) {
-                            mission = "<UNKNOWN>";
-                        }
-                    }
                     long milis = ((JsonNumber) jmission.get(2)).longValue();
                     long fleetid = object.getJsonNumber("api_id").longValue();
-
-                    Set<Long> ships = new LinkedHashSet<Long>();
-                    JsonArray shiparray = object.getJsonArray("api_ship");
-                    for (JsonValue jsonValue : shiparray) {
-                        long shipid = ((JsonNumber) jsonValue).longValue();
-                        if (shipid != -1) {
-                            ships.add(shipid);
-                        }
-                    }
-
-                    Date time = null;
-                    if (milis > 0) {
-                        time = new Date(milis);
-                    }
-                    deckMissions[i - 1] = new DeckMissionDto(name, mission, time, fleetid, ships);
+                    doMissionSub(fleetid, section, milis);
                 }
                 addConsole("遠征情報を更新しました");
 
                 // 連合艦隊を更新する
-                combined = false;
+                combined = 0;
                 if (apidata.containsKey("api_combined_flag")) {
-                    switch (apidata.getJsonNumber("api_combined_flag").intValue()) {
-                    case 1:
-                        combined = true;
-                        break;
-                    default:
-                        break;
-                    }
+                    combined = apidata.getJsonNumber("api_combined_flag").intValue();
                     addConsole("連合艦隊を更新しました");
                 }
             }
@@ -589,9 +672,30 @@ public final class GlobalContext {
     private static void doBattle(Data data) {
         try {
             JsonObject apidata = data.getJsonObject().getJsonObject("api_data");
-            battle = new BattleDto(apidata);
-
+            battleList.add(new BattleDto(apidata, false, combined));
+            if (sortiePhase != SortiePhase.BATTLE)
+                battleCount++;
+            sortiePhase = SortiePhase.BATTLE;
             addConsole("海戦情報を更新しました");
+        } catch (Exception e) {
+            LoggerHolder.LOG.warn("海戦情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
+        }
+    }
+
+    /**
+     * 海戦情報を更新します
+     * @param data
+     */
+    private static void doBattleNight(Data data) {
+        try {
+            JsonObject apidata = data.getJsonObject().getJsonObject("api_data");
+            battleList.add(new BattleDto(apidata, true, combined));
+            if (sortiePhase != SortiePhase.BATTLE)
+                battleCount++;
+            sortiePhase = SortiePhase.BATTLE;
+            addConsole("海戦情報を更新しました");
+
         } catch (Exception e) {
             LoggerHolder.LOG.warn("海戦情報を更新しますに失敗しました", e);
             LoggerHolder.LOG.warn(data);
@@ -604,13 +708,183 @@ public final class GlobalContext {
      */
     private static void doBattleresult(Data data) {
         try {
-            if (battle != null) {
+            if (battleList.size() != 0) {
                 JsonObject apidata = data.getJsonObject().getJsonObject("api_data");
-                BattleResultDto dto = new BattleResultDto(apidata, mapCellNo, mapBossCellNo, eventId, isStart, battle);
+                BattleResultDto dto = new BattleResultDto(apidata, mapCellNo, mapBossCellNo, bossArrive, isStart,
+                        battleList.toArray(new BattleDto[0]));
                 battleResultList.add(dto);
                 CreateReportLogic.storeBattleResultReport(dto);
+                battleList.clear();
+                BattleDto last = dto.getBattles()[dto.getBattles().length - 1];
+                boolean s = "S".equals(dto.getRank());
+                boolean a = s || "A".equals(dto.getRank());
+                boolean win = a || "B".equals(dto.getRank());
+                int ap = 0;
+                int cv = 0;
+                int ss = 0;
+
+                for (int i = 0; i < last.getEnemy().size(); ++i) {
+                    if (last.getEndEnemyHp()[i] <= 0) {
+                        switch (last.getEnemy().get(i).getType()) {
+                        case "補給艦":
+                            ap++;
+                            break;
+                        case "軽空母":
+                        case "正規空母":
+                            cv++;
+                            break;
+                        case "潜水艦":
+                            ss++;
+                            break;
+                        }
+                    }
+                }
+
+                Date now = new Date();
+                for (Integer no : QuestConfig.getNoList()) {
+                    QuestBean bean = QuestConfig.get(no);
+                    if ((bean != null) && bean.getExecuting()) {
+                        if (win) {
+                            bean.countBattleWin(now);
+                        }
+                        if (s) {
+                            bean.countBattleWinS(now);
+                        }
+                        if (bossArrive) {
+                            bean.countBossArrive(now);
+                            if (win) {
+                                bean.countBossWin(now);
+                                switch (mapAreaNo) {
+                                case 1:
+                                    if ((mapInfoNo == 4) && s) {
+                                        bean.countBoss1_4WinS(now);
+                                    }
+                                    if ((mapInfoNo == 5) && a) {
+                                        bean.countBoss1_5WinA(now);
+                                    }
+                                    break;
+                                case 2:
+                                    bean.countBoss2Win(now);
+                                    break;
+                                case 3:
+                                    if (mapInfoNo >= 3) {
+                                        bean.countBoss3_3pWin(now);
+                                    }
+                                    break;
+                                case 4:
+                                    bean.countBoss4Win(now);
+                                    if (mapInfoNo == 4) {
+                                        bean.countBoss4_4Win(now);
+                                    }
+                                    break;
+                                case 5:
+                                    if ((mapInfoNo == 2) && s) {
+                                        bean.countBoss5_2WinS(now);
+                                    }
+                                    break;
+                                case 6:
+                                    if ((mapInfoNo == 1) && s) {
+                                        bean.countBoss6_1WinS(now);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        Calendar c = Calendar.getInstance();
+                        c.setTime(now);
+                        for (int i = 0; i < ap; ++i) {
+                            bean.countDefeatAP(c.getTime());
+                            c.add(Calendar.MILLISECOND, -1);
+                        }
+                        c.setTime(now);
+                        for (int i = 0; i < cv; ++i) {
+                            bean.countDefeatCV(c.getTime());
+                            c.add(Calendar.MILLISECOND, -1);
+                        }
+                        c.setTime(now);
+                        for (int i = 0; i < ss; ++i) {
+                            bean.countDefeatSS(c.getTime());
+                            c.add(Calendar.MILLISECOND, -1);
+                        }
+                    }
+                }
+                QuestConfig.store();
+
+                List<ShipDto> sps = new ArrayList<ShipDto>();
+                for (int i = 0; i < 6; i++) {
+                    if ((last.getMaxFriendHp()[i] > 0) && ((last.getEndFriendHp()[i] * 4) <= last.getMaxFriendHp()[i])) {
+                        sps.add(last.getFriends().get(0).getShips().get(i));
+                    }
+                    if ((last.getMaxCombinedHp()[i] > 0)
+                            && ((last.getEndCombinedHp()[i] * 4) <= last.getMaxCombinedHp()[i])) {
+                        sps.add(last.getFriends().get(1).getShips().get(i));
+                    }
+                }
+                if (!sps.isEmpty()) {
+                    Thread th = new Thread() {
+                        private List<ShipDto> ships;
+
+                        public Thread set(List<ShipDto> ships) {
+                            this.ships = ships;
+                            return this;
+                        }
+
+                        @Override
+                        public void run() {
+                            try {
+                                sleep(8000);
+                            }
+                            catch (InterruptedException e) {
+                            }
+                            Display.getDefault().asyncExec(new PostFatal(this.ships));
+                        }
+
+                        class PostFatal implements Runnable {
+                            private final List<ShipDto> ships;
+
+                            public PostFatal(List<ShipDto> ships) {
+                                super();
+                                this.ships = ships;
+                            }
+
+                            @Override
+                            public void run() {
+                                if (AppConfig.get().isBalloonBybadlyDamage()) {
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append(AppConstants.MESSAGE_STOP_SORTIE);
+                                    sb.append("\n");
+                                    for (ShipDto shipDto : this.ships) {
+                                        sb.append(shipDto.getName());
+                                        sb.append("(" + shipDto.getLv() + ")");
+                                        sb.append(" : ");
+                                        List<ItemDto> items = shipDto.getItem();
+                                        List<String> names = new ArrayList<String>();
+                                        for (ItemDto itemDto : items) {
+                                            if (itemDto != null) {
+                                                names.add(itemDto.getName());
+                                            }
+                                        }
+                                        sb.append(StringUtils.join(names, ","));
+                                        sb.append("\n");
+                                    }
+                                    ToolTip tip = new ToolTip(ApplicationMain.getWindow().getShell(), SWT.BALLOON
+                                            | SWT.ICON_ERROR);
+                                    tip.setText("大破警告");
+                                    tip.setMessage(sb.toString());
+
+                                    ApplicationMain.getWindow().getTrayItem().setToolTip(tip);
+                                    tip.setVisible(true);
+                                }
+                                // 大破時にサウンドを再生する
+                                PlayerThread.randomBadlySoundPlay();
+                            }
+                        }
+                    }.set(sps);
+                    th.start();
+                }
             }
             // 出撃を更新
+            sortiePhase = SortiePhase.BATTLE_RESULT;
             isStart = false;
             addConsole("海戦情報を更新しました");
         } catch (Exception e) {
@@ -639,6 +913,15 @@ public final class GlobalContext {
             lastBuildKdock = kdockid;
             getShipResource.put(kdockid, resource);
             KdockConfig.store(kdockid, resource);
+
+            Date now = new Date();
+            for (Integer no : QuestConfig.getNoList()) {
+                QuestBean bean = QuestConfig.get(no);
+                if ((bean != null) && bean.getExecuting()) {
+                    bean.countCreateShip(now);
+                }
+            }
+            QuestConfig.store();
 
             addConsole("建造(投入資源)情報を更新しました");
         } catch (Exception e) {
@@ -751,6 +1034,16 @@ public final class GlobalContext {
             } else {
                 createItemList.add(createitem);
             }
+
+            Date now = new Date();
+            for (Integer no : QuestConfig.getNoList()) {
+                QuestBean bean = QuestConfig.get(no);
+                if ((bean != null) && bean.getExecuting()) {
+                    bean.countCreateItem(now);
+                }
+            }
+            QuestConfig.store();
+
             CreateReportLogic.storeCreateItemReport(createitem);
 
             addConsole("装備開発情報を更新しました");
@@ -950,6 +1243,15 @@ public final class GlobalContext {
                     dockdto.removeShip(dockdto.indexOf(ship));
             }
 
+            Date now = new Date();
+            for (Integer no : QuestConfig.getNoList()) {
+                QuestBean bean = QuestConfig.get(no);
+                if ((bean != null) && bean.getExecuting()) {
+                    bean.countDestroyShip(now);
+                }
+            }
+            QuestConfig.store();
+
             addConsole("艦娘を解体しました");
         } catch (Exception e) {
             LoggerHolder.LOG.warn("艦娘を解体しますに失敗しました", e);
@@ -968,6 +1270,16 @@ public final class GlobalContext {
                 Long item = Long.parseLong(itemid);
                 ItemContext.get().remove(item);
             }
+
+            Date now = new Date();
+            for (Integer no : QuestConfig.getNoList()) {
+                QuestBean bean = QuestConfig.get(no);
+                if ((bean != null) && bean.getExecuting()) {
+                    bean.countDestroyItem(now);
+                }
+            }
+            QuestConfig.store();
+
             addConsole("装備を廃棄しました");
         } catch (Exception e) {
             LoggerHolder.LOG.warn("装備を廃棄しますに失敗しました", e);
@@ -994,9 +1306,22 @@ public final class GlobalContext {
                     ShipContext.get().remove(ship.getId());
                 }
             }
-            addConsole("装備を廃棄しました");
+
+            if (data.getJsonObject().getJsonObject("api_data").getJsonNumber("api_powerup_flag").intValue() != 0)
+            {
+                Date now = new Date();
+                for (Integer no : QuestConfig.getNoList()) {
+                    QuestBean bean = QuestConfig.get(no);
+                    if ((bean != null) && bean.getExecuting()) {
+                        bean.countPowerUp(now);
+                    }
+                }
+                QuestConfig.store();
+            }
+
+            addConsole("近代化改修しました");
         } catch (Exception e) {
-            LoggerHolder.LOG.warn("装備を廃棄しますに失敗しました", e);
+            LoggerHolder.LOG.warn("近代化改修しますに失敗しました", e);
             LoggerHolder.LOG.warn(data);
         }
     }
@@ -1033,6 +1358,56 @@ public final class GlobalContext {
     }
 
     /**
+     * 遠征を更新します
+     *
+     * @param data
+     */
+    private static void doMission(Data data) {
+        try {
+            JsonObject apidata = data.getJsonObject().getJsonObject("api_data");
+
+            doMissionSub(Long.parseLong(data.getField("api_deck_id")),
+                    Integer.parseInt(data.getField("api_mission_id")),
+                    apidata.getJsonNumber("api_complatetime").longValue());
+
+            addConsole("遠征情報を更新しました");
+        } catch (Exception e) {
+            LoggerHolder.LOG.warn("遠征を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
+        }
+    }
+
+    /**
+     * 遠征を更新します
+     *
+     * @param data
+     */
+    private static void doMissionSub(long fleetId, int missionId, long milis) {
+        String mission = null;
+        if (missionId != 0) {
+            mission = Deck.get(missionId);
+            if (mission == null) {
+                mission = "<UNKNOWN>";
+            }
+        }
+        DockDto dockdto = dock.get(Long.toString(fleetId));
+
+        Set<Long> ships = new LinkedHashSet<Long>();
+        for (ShipDto s : dockdto.getShips()) {
+            long shipid = s.getId();
+            if (shipid != -1) {
+                ships.add(shipid);
+            }
+        }
+
+        Date time = null;
+        if (milis > 0) {
+            time = new Date(milis);
+        }
+        deckMissions[(int) (fleetId - 2)] = new DeckMissionDto(dockdto.getName(), mission, time, fleetId, ships);
+    }
+
+    /**
      * 遠征(帰還)を更新します
      *
      * @param data
@@ -1053,6 +1428,15 @@ public final class GlobalContext {
                 result.setAmmo(material.getJsonNumber(1).toString());
                 result.setMetal(material.getJsonNumber(2).toString());
                 result.setBauxite(material.getJsonNumber(3).toString());
+
+                Date now = new Date();
+                for (Integer no : QuestConfig.getNoList()) {
+                    QuestBean bean = QuestConfig.get(no);
+                    if ((bean != null) && bean.getExecuting()) {
+                        bean.countMissionSuccess(now);
+                    }
+                }
+                QuestConfig.store();
             }
 
             CreateReportLogic.storeCreateMissionReport(result);
@@ -1131,9 +1515,32 @@ public final class GlobalContext {
                         quest.setBonusFlag(questobject.getInt("api_bonus_flag"));
                         quest.setProgressFlag(questobject.getInt("api_progress_flag"));
 
+                        QuestBean bean = QuestConfig.get(quest.getNo());
+                        if (bean == null) {
+                            bean = new QuestBean();
+                        }
+                        switch (quest.getType())
+                        {
+                        case 2:
+                        case 4:
+                        case 5:
+                            bean.setDue(QuestDue.getDaily());
+                            break;
+                        case 3:
+                            bean.setDue(QuestDue.getWeekly());
+                            break;
+                        case 6:
+                            bean.setDue(QuestDue.getMonthly());
+                            break;
+                        default:
+                            break;
+                        }
+                        bean.setExecuting(quest.getState() == 2);
+                        QuestConfig.put(quest.getNo(), bean);
                         questMap.put(quest.getNo(), quest);
                     }
                 }
+                QuestConfig.store();
             }
             addConsole("任務を更新しました");
         } catch (Exception e) {
@@ -1153,6 +1560,7 @@ public final class GlobalContext {
             if (idstr != null) {
                 Integer id = Integer.valueOf(idstr);
                 questMap.remove(id);
+                QuestConfig.remove(id);
             }
         } catch (Exception e) {
             LoggerHolder.LOG.warn("消化した任務を除去しますに失敗しました", e);
@@ -1173,7 +1581,7 @@ public final class GlobalContext {
                 isSortie[id - 1] = true;
             }
             // 連合艦隊第2艦隊の出撃
-            if (combined) {
+            if (combined != 0) {
                 isSortie[1] = true;
             }
             // 出撃を更新
@@ -1181,9 +1589,26 @@ public final class GlobalContext {
 
             JsonObject obj = data.getJsonObject().getJsonObject("api_data");
 
+            mapAreaNo = obj.getJsonNumber("api_maparea_id").intValue();
+            mapInfoNo = obj.getJsonNumber("api_mapinfo_no").intValue();
             mapCellNo = obj.getJsonNumber("api_no").intValue();
             mapBossCellNo = obj.getJsonNumber("api_bosscell_no").intValue();
             eventId = obj.getJsonNumber("api_event_id").intValue();
+
+            int color = obj.getJsonNumber("api_color_no").intValue();
+            bossArrive = (color == 5) || (color == 8);
+
+            Date now = new Date();
+            for (Integer no : QuestConfig.getNoList()) {
+                QuestBean bean = QuestConfig.get(no);
+                if ((bean != null) && bean.getExecuting()) {
+                    bean.countSortie(now);
+                }
+            }
+            QuestConfig.store();
+
+            battleCount = 0;
+            sortiePhase = SortiePhase.MAP;
 
             addConsole("出撃を更新しました");
         } catch (Exception e) {
@@ -1201,9 +1626,15 @@ public final class GlobalContext {
         try {
             JsonObject obj = data.getJsonObject().getJsonObject("api_data");
 
+            mapAreaNo = obj.getJsonNumber("api_maparea_id").intValue();
+            mapInfoNo = obj.getJsonNumber("api_mapinfo_no").intValue();
             mapCellNo = obj.getJsonNumber("api_no").intValue();
             mapBossCellNo = obj.getJsonNumber("api_bosscell_no").intValue();
             eventId = obj.getJsonNumber("api_event_id").intValue();
+
+            int color = obj.getJsonNumber("api_color_no").intValue();
+            bossArrive = (color == 5) || (color == 8);
+            sortiePhase = SortiePhase.MAP;
 
             addConsole("進撃を更新しました");
         } catch (Exception e) {
@@ -1244,6 +1675,59 @@ public final class GlobalContext {
             addConsole("設定を更新しました");
         } catch (Exception e) {
             LoggerHolder.LOG.warn("設定を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
+        }
+    }
+
+    /**
+     * 演習情報を更新します
+     * @param data
+     */
+    private static void doPracticeResult(Data data) {
+        try {
+            JsonObject obj = data.getJsonObject().getJsonObject("api_data");
+            if (obj != null) {
+                String rank = obj.getString("api_win_rank");
+                boolean win = "B".equals(rank) || "A".equals(rank) || "S".equals(rank);
+
+                Date now = new Date();
+                for (Integer no : QuestConfig.getNoList()) {
+                    QuestBean bean = QuestConfig.get(no);
+                    if ((bean != null) && bean.getExecuting()) {
+                        bean.countPractice(now);
+                        if (win) {
+                            bean.countPracticeWin(now);
+                        }
+                    }
+                }
+                QuestConfig.store();
+
+                addConsole("演習情報を更新しました");
+            }
+        } catch (Exception e) {
+            LoggerHolder.LOG.warn("演習情報を更新しますに失敗しました", e);
+            LoggerHolder.LOG.warn(data);
+        }
+    }
+
+    /**
+     * 入渠します
+     * @param data
+     */
+    private static void doNyukyo(Data data) {
+        try {
+            Date now = new Date();
+            for (Integer no : QuestConfig.getNoList()) {
+                QuestBean bean = QuestConfig.get(no);
+                if ((bean != null) && bean.getExecuting()) {
+                    bean.countRepair(now);
+                }
+            }
+            QuestConfig.store();
+
+            addConsole("入渠情報を更新しました");
+        } catch (Exception e) {
+            LoggerHolder.LOG.warn("入渠を更新しますに失敗しました", e);
             LoggerHolder.LOG.warn(data);
         }
     }

@@ -19,11 +19,27 @@ public class AppConstants {
     /** バージョン */
     public static final String VERSION = "0.8.7";
 
+    /**　アプリケーション名 */
+    public static final String NAME_PLUS = "航海日誌+";
+
+    /** バージョン */
+    public static final String VERSION_PLUS = "1.0.5";
+
+    /** バージョン */
+    public static final String VERSION_FULL = VERSION + "+" + VERSION_PLUS;
+
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://kancolle.sanaechan.net/");
 
+    /** ホームページ */
+    public static final URI HOME_PAGE_URI_PLUS = URI.create("https://github.com/Ibemu/logbook");
+
     /** アップデートチェック先 */
     public static final URI UPDATE_CHECK_URI = URI.create("http://kancolle.sanaechan.net/checkversion.txt");
+
+    /** アップデートチェック先 */
+    public static final URI UPDATE_CHECK_URI_PLUS =
+            URI.create("https://raw.githubusercontent.com/Ibemu/logbook/plus/checkversion.txt");
 
     /** 日付書式 */
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -118,6 +134,9 @@ public class AppConstants {
     /** 建造ドック設定ファイル  */
     public static final File KDOCK_CONFIG_FILE = new File("./config/kdock.xml");
 
+    /** 任務設定ファイル  */
+    public static final File QUEST_CONFIG_FILE = new File("./config/quest.xml");
+
     /** 所有艦娘グループ設定ファイル  */
     public static final File GROUP_CONFIG_FILE = new File("./config/group.xml");
 
@@ -182,7 +201,7 @@ public class AppConstants {
     public static final String R_ICON_COND_UPPER50_MONO = "/resources/icon/cond_upper50_mono.png";
 
     /** 艦隊タブの艦娘ラベルに設定するツールチップテキスト */
-    public static final String TOOLTIP_FLEETTAB_SHIP = "HP:{0}/{1} 燃料:{2}/{3} 弾:{4}/{5}\nNext:{6}exp";
+    public static final String TOOLTIP_FLEETTAB_SHIP = "HP:{0}/{1} 燃料:{2}/{3} 弾:{4}/{5}\nNext:{6}exp\n装備\n  {7}";
 
     /** メッセージ 出撃できます。 */
     public static final String MESSAGE_GOOD = "出撃できます。";
@@ -191,28 +210,31 @@ public class AppConstants {
     public static final String MESSAGE_BAD = "{0} 出撃はできません。";
 
     /** メッセージ 大破している艦娘がいます  */
-    public static final String MESSAGE_BADLY_DAMAGE = "大破している艦娘がいます";
+    public static final String MESSAGE_BADLY_DAMAGE = "大破艦あり";
 
     /** メッセージ 入渠中の艦娘がいます  */
-    public static final String MESSAGE_BATHWATER = "入渠中の艦娘がいます";
+    public static final String MESSAGE_BATHWATER = "入渠艦あり";
 
     /** メッセージ 遠征中です。  */
     public static final String MESSAGE_MISSION = "遠征中です。";
 
     /** メッセージ 疲労している艦娘がいます */
-    public static final String MESSAGE_COND = "疲労している艦娘がいます {0}頃に回復します。";
+    public static final String MESSAGE_COND = "疲労艦あり {0}頃回復。";
 
     /** メッセージ 大破している艦娘がいます */
     public static final String MESSAGE_STOP_SORTIE = "大破している艦娘がいます、進撃はできません。";
 
     /** メッセージ 制空値:{0} */
-    public static final String MESSAGE_SEIKU = "制空値:{0}。";
+    public static final String MESSAGE_SEIKU = "制空:{0}。";
 
     /** メッセージ  索敵値計:{0} */
-    public static final String MESSAGE_SAKUTEKI = "索敵値計:{0}。";
+    public static final String MESSAGE_SAKUTEKI = "索敵:{0}, {1}。";
 
     /** メッセージ  艦隊合計Lv:{0} */
-    public static final String MESSAGE_TOTAL_LV = "艦隊合計Lv:{0}。";
+    public static final String MESSAGE_TOTAL_LV = "合計Lv:{0}。";
+
+    /** メッセージ ドラム缶:{0}隻{1}個 */
+    public static final String MESSAGE_DRUM = "ドラム缶:{0}隻{1}個。";
 
     /** メッセージ 泊地修理の準備中({0}分経過)*/
     public static final String BERTH_REPAIR_1 = "泊地修理の準備中({0}分経過)";

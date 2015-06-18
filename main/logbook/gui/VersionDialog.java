@@ -68,14 +68,32 @@ public final class VersionDialog extends Dialog {
         label(AppConstants.NAME, versionGroup);
         label(AppConstants.VERSION, versionGroup);
 
+        label("", versionGroup);
         Link gowebsite = new Link(versionGroup, SWT.NONE);
-        gowebsite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, false, false, 2, 1));
-        gowebsite.setText("<a>クリックするとウェブサイトに移動します</a>");
+        gowebsite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, false, false, 1, 1));
+        gowebsite.setText("<a>ウェブサイト</a>");
         gowebsite.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 try {
                     Desktop.getDesktop().browse(AppConstants.HOME_PAGE_URI);
+                } catch (Exception e) {
+                }
+            }
+        });
+
+        label(AppConstants.NAME_PLUS, versionGroup);
+        label(AppConstants.VERSION_PLUS, versionGroup);
+
+        label("", versionGroup);
+        gowebsite = new Link(versionGroup, SWT.NONE);
+        gowebsite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, false, false, 1, 1));
+        gowebsite.setText("<a>ウェブサイト</a>");
+        gowebsite.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent event) {
+                try {
+                    Desktop.getDesktop().browse(AppConstants.HOME_PAGE_URI_PLUS);
                 } catch (Exception e) {
                 }
             }
