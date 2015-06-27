@@ -57,7 +57,6 @@ public final class CaptureConfigComposite extends Composite {
         this.captureDir.setText(AppConfig.get().getCapturePath());
 
         Button savedirBtn = new Button(this, SWT.NONE);
-        savedirBtn.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         savedirBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -77,7 +76,7 @@ public final class CaptureConfigComposite extends Composite {
 
         this.imageformatCombo = new Combo(this, SWT.READ_ONLY);
         this.imageformatCombo.setItems(new String[] { "jpg", "png" });
-        this.imageformatCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.imageformatCombo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
         this.imageformatCombo.select(0);
         for (int i = 0; i < this.imageformatCombo.getItems().length; i++) {
             if (AppConfig.get().getImageFormat().equals(this.imageformatCombo.getItem(i))) {

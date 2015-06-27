@@ -105,7 +105,6 @@ public final class SystemConfigComposite extends Composite {
         this.reportDir.setText(AppConfig.get().getReportPath());
 
         Button reportSavedirBtn = new Button(this, SWT.NONE);
-        reportSavedirBtn.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         reportSavedirBtn.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -127,7 +126,7 @@ public final class SystemConfigComposite extends Composite {
         this.materialintervalSpinner.setMaximum(60 * 60 * 24);
         this.materialintervalSpinner.setMinimum(10);
         this.materialintervalSpinner.setSelection(AppConfig.get().getMaterialLogInterval());
-        GridData gdMaterialIntervalSpinner = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        GridData gdMaterialIntervalSpinner = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
         gdMaterialIntervalSpinner.widthHint = 55;
         this.materialintervalSpinner.setLayoutData(gdMaterialIntervalSpinner);
 
