@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 /**
@@ -29,6 +30,8 @@ public final class ChartConfigComposite extends Composite {
     private final Label metal;
     /** ボーキの色 */
     private final Label bauxite;
+    /** 線の太さ */
+    private final Spinner strokeWidth;
 
     /**
      * Create the composite.
@@ -46,7 +49,6 @@ public final class ChartConfigComposite extends Composite {
         this.fuel.setForeground(SWTResourceManager.getColor(AppConfig.get().getFuelColor()));
 
         Button changeFuelColor = new Button(this, SWT.NONE);
-        changeFuelColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         changeFuelColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -60,7 +62,6 @@ public final class ChartConfigComposite extends Composite {
         changeFuelColor.setText("色の設定");
 
         Button resetFuelColor = new Button(this, SWT.NONE);
-        resetFuelColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         resetFuelColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -75,7 +76,6 @@ public final class ChartConfigComposite extends Composite {
         this.ammo.setForeground(SWTResourceManager.getColor(AppConfig.get().getAmmoColor()));
 
         Button changeAmmoColor = new Button(this, SWT.NONE);
-        changeAmmoColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         changeAmmoColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -89,7 +89,6 @@ public final class ChartConfigComposite extends Composite {
         changeAmmoColor.setText("色の設定");
 
         Button resetAmmoColor = new Button(this, SWT.NONE);
-        resetAmmoColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         resetAmmoColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -104,7 +103,6 @@ public final class ChartConfigComposite extends Composite {
         this.metal.setForeground(SWTResourceManager.getColor(AppConfig.get().getMetalColor()));
 
         Button changeMetalColor = new Button(this, SWT.NONE);
-        changeMetalColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         changeMetalColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -118,7 +116,6 @@ public final class ChartConfigComposite extends Composite {
         changeMetalColor.setText("色の設定");
 
         Button resetMetalColor = new Button(this, SWT.NONE);
-        resetMetalColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         resetMetalColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -133,7 +130,6 @@ public final class ChartConfigComposite extends Composite {
         this.bauxite.setForeground(SWTResourceManager.getColor(AppConfig.get().getBauxiteColor()));
 
         Button changeBauxiteColor = new Button(this, SWT.NONE);
-        changeBauxiteColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         changeBauxiteColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -147,7 +143,6 @@ public final class ChartConfigComposite extends Composite {
         changeBauxiteColor.setText("色の設定");
 
         Button resetBauxiteColor = new Button(this, SWT.NONE);
-        resetBauxiteColor.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         resetBauxiteColor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -155,6 +150,24 @@ public final class ChartConfigComposite extends Composite {
             }
         });
         resetBauxiteColor.setText("リセット");
+
+        Composite composite = new Composite(this, SWT.NONE);
+        composite.setLayout(new GridLayout(3, false));
+        composite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+
+        Label lblNewLabel = new Label(composite, SWT.NONE);
+        lblNewLabel.setText("線の太さ");
+
+        this.strokeWidth = new Spinner(composite, SWT.BORDER);
+        GridData gdSpinner = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdSpinner.widthHint = 40;
+        this.strokeWidth.setLayoutData(gdSpinner);
+        this.strokeWidth.setMaximum(10);
+        this.strokeWidth.setMinimum(1);
+        this.strokeWidth.setSelection(AppConfig.get().getStrokeWidth());
+
+        Label lblPx = new Label(composite, SWT.NONE);
+        lblPx.setText("px");
     }
 
     @Override
@@ -195,6 +208,14 @@ public final class ChartConfigComposite extends Composite {
     }
 
     /**
+     * 線の太さを取得します。
+     * @return 線の太さ
+     */
+    public int getStrokeWidth() {
+        return this.strokeWidth.getSelection();
+    }
+
+    /**
      * 画面設定を登録します
      * @param config アプリケーション設定
      */
@@ -203,5 +224,6 @@ public final class ChartConfigComposite extends Composite {
         config.setAmmoColor(this.getAmmo());
         config.setMetalColor(this.getMetal());
         config.setBauxiteColor(this.getBauxite());
+        config.setStrokeWidth(this.getStrokeWidth());
     }
 }
