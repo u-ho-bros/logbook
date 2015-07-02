@@ -1,11 +1,6 @@
 package logbook.gui;
 
 import java.io.IOException;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -237,31 +232,6 @@ public final class ConfigDialog extends Dialog {
         sashForm.setWeights(new int[] { 2, 5 });
         this.scrolledComposite.setContent(this.composite);
         this.scrolledComposite.setMinSize(this.composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-    }
-
-    /**
-     * 画像ファイル名のプレビュー
-     *
-     * @param format
-     * @return
-     */
-    private static String prevImageNameFormat(String format) {
-        try {
-            Calendar calendar = Calendar.getInstance();
-            if (format.isEmpty()) {
-                throw new IllegalArgumentException();
-            }
-            String prev = new SimpleDateFormat(format).format(calendar.getTime())
-                    + "." + AppConfig.get().getImageFormat();
-            try {
-                Path path = Paths.get(AppConfig.get().getCapturePath(), prev);
-                return path.normalize().toString();
-            } catch (InvalidPathException ex) {
-                return "ファイル名に無効な文字が含まれています :" + ex.getReason();
-            }
-        } catch (IllegalArgumentException ex) {
-            return "日付書式が無効です :" + ex.getMessage();
-        }
     }
 
     /**
