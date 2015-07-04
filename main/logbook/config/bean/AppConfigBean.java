@@ -141,6 +141,9 @@ public final class AppConfigBean {
     /** ボーキの色 */
     private RGB bauxiteColor = new RGB(0xCC, 0x33, 0x00);
 
+    /** 線の太さ */
+    private int strokeWidth = 3;
+
     /** テーブル列を表示する設定(キー:java.lang.Class.getName()) */
     private Map<String, boolean[]> visibleColumnMap = new HashMap<>();
 
@@ -861,6 +864,22 @@ public final class AppConfigBean {
      */
     public void setBauxiteColor(RGB bauxiteColor) {
         this.bauxiteColor = bauxiteColor;
+    }
+
+    /**
+     * 線の太さを取得します。
+     * @return 線の太さ
+     */
+    public int getStrokeWidth() {
+        return this.strokeWidth;
+    }
+
+    /**
+     * 線の太さを設定します。
+     * @param stroke 線の太さ
+     */
+    public void setStrokeWidth(int stroke) {
+        this.strokeWidth = stroke;
     }
 
     /**

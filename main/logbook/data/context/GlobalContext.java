@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -515,10 +517,24 @@ public final class GlobalContext {
 
                 // 保有艦娘を更新する
                 JsonArray apiShip = apidata.getJsonArray("api_ship");
+                Set<Long> portShips = new HashSet<>();
                 for (int i = 0; i < apiShip.size(); i++) {
                     ShipDto ship = new ShipDto((JsonObject) apiShip.get(i));
-                    ShipContext.get().put(Long.valueOf(ship.getId()), ship);
+                    Long key = Long.valueOf(ship.getId());
+                    ShipContext.get().put(key, ship);
+                    portShips.add(key);
                 }
+                // portに無い艦娘を除く
+                for (Entry<Long, ShipDto> entry : ShipContext.get().entrySet()) {
+                    if (!portShips.contains(entry.getKey())) {
+                        for (Long item : entry.getValue().getItemId()) {
+                            ItemContext.get().remove(item);
+                            ItemContext.level().remove(item);
+                        }
+                        ShipContext.get().remove(entry.getKey());
+                    }
+                }
+
                 JsonArray apiDeckPort = apidata.getJsonArray("api_deck_port");
                 doDeck(apiDeckPort);
                 addConsole("保有艦娘情報を更新しました");
@@ -770,6 +786,7 @@ public final class GlobalContext {
             JsonArray apidata = data.getJsonObject().getJsonArray("api_data");
             // 破棄
             ItemContext.get().clear();
+            ItemContext.level().clear();
             for (int i = 0; i < apidata.size(); i++) {
                 JsonObject object = (JsonObject) apidata.get(i);
                 int typeid = object.getJsonNumber("api_slotitem_id").intValue();
@@ -941,6 +958,7 @@ public final class GlobalContext {
                 List<Long> items = ship.getItemId();
                 for (Long item : items) {
                     ItemContext.get().remove(item);
+                    ItemContext.level().remove(item);
                 }
                 // 艦娘を外す
                 ShipContext.get().remove(ship.getId());
@@ -967,6 +985,7 @@ public final class GlobalContext {
             for (String itemid : itemids.split(",")) {
                 Long item = Long.parseLong(itemid);
                 ItemContext.get().remove(item);
+                ItemContext.level().remove(item);
             }
             addConsole("装備を廃棄しました");
         } catch (Exception e) {
@@ -989,6 +1008,7 @@ public final class GlobalContext {
                     List<Long> items = ship.getItemId();
                     for (Long item : items) {
                         ItemContext.get().remove(item);
+                        ItemContext.level().remove(item);
                     }
                     // 艦娘を外す
                     ShipContext.get().remove(ship.getId());
