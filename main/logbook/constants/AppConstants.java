@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.TimeZone;
 
+import logbook.internal.Version;
+
 import org.eclipse.swt.graphics.RGB;
 
 /**
@@ -18,7 +20,7 @@ public class AppConstants {
     public static final String NAME = "航海日誌";
 
     /** バージョン */
-    public static final String VERSION = "0.8.8";
+    public static final Version VERSION = new Version(0, 8, 8);
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://kancolle.sanaechan.net/");

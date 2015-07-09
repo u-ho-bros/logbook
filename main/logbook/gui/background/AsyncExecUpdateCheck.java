@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.text.MessageFormat;
 
 import logbook.constants.AppConstants;
+import logbook.internal.Version;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -43,9 +44,9 @@ public final class AsyncExecUpdateCheck implements Runnable {
     @Override
     public void run() {
         try {
-            String newversion = IOUtils.toString(AppConstants.UPDATE_CHECK_URI);
+            Version newversion = new Version(IOUtils.toString(AppConstants.UPDATE_CHECK_URI));
 
-            if (!AppConstants.VERSION.equals(newversion)) {
+            if (AppConstants.VERSION.compareTo(newversion) < 0) {
                 Display.getDefault().asyncExec(() -> {
                     if (!this.shell.isDisposed()) {
                         MessageBox box = new MessageBox(this.shell, SWT.YES | SWT.NO
