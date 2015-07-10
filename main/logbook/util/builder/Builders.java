@@ -74,7 +74,14 @@ public class Builders {
     }
 
     /**
-     * CollectionBuilderを作成します
+     * CollectionBuilderを作成します<br>
+     * 次はArrayListのインスタンスにappleとgrapeを追加する例です
+     * <pre>{@code
+     *     List<String> list = Builders.newCollectionBuilder(ArrayList<String>::new)
+     *             .add("apple")
+     *             .add("grape")
+     *             .build();
+     * }</pre>
      *
      * @param supplier Collectionインスタンスを返すサプライヤ
      * @return CollectionBuilder
@@ -84,8 +91,14 @@ public class Builders {
     }
 
     /**
-     * MapBuilderを作成します
-     *
+     * MapBuilderを作成します<br>
+     * 次はLinkedHashMapのインスタンスにappleとgrapeの値段を設定する例です
+     * <pre>{@code
+     *     Map<String, Integer> map = Builders.newMapBuilder(LinkedHashMap<String, Integer>::new)
+     *             .put("apple", 100)
+     *             .put("grape", 200)
+     *             .build();
+     * }</pre>
      * @param supplier Mapインスタンスを返すサプライヤ
      * @return MapBuilder
      */
