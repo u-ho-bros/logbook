@@ -78,7 +78,7 @@ public final class ShipDto extends AbstractDto {
     private final float expraito;
 
     /** HP */
-    private final long nowhp;
+    private long nowhp;
 
     /** MaxHP */
     private final long maxhp;
@@ -370,6 +370,10 @@ public final class ShipDto extends AbstractDto {
      */
     public long getNowhp() {
         return this.nowhp;
+    }
+
+    public void setNowHp(long nowhp) {
+        this.nowhp = nowhp;
     }
 
     /**
