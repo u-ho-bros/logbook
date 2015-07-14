@@ -1137,7 +1137,7 @@ public final class GlobalContext {
         try {
             String ndockIdStr = data.getField("api_ndock_id");
             if (ndockIdStr != null) {
-                int ndockId = Integer.valueOf(ndockIdStr);
+                int ndockId = Integer.parseInt(ndockIdStr);
                 processSpeedChange(ndockId - 1);
             }
             addConsole("高速修復情報を更新しました");
