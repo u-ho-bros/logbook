@@ -63,6 +63,7 @@ public final class BeanUtils {
      * @return オブジェクト
      * @throws IOException
      */
+    @SuppressWarnings("unchecked")
     @CheckForNull
     public static <T> T readObject(Path path, Class<T> clazz) {
         Path target = path;
