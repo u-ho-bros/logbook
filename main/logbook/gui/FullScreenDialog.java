@@ -145,6 +145,7 @@ public final class FullScreenDialog extends Dialog {
                 FullScreenDialog.this.starty = FullScreenDialog.this.endy = e.y;
             }
         });
+        canvas.setCursor(SWTResourceManager.getCursor(SWT.CURSOR_CROSS));
         this.shell.setActive();
     }
 
