@@ -51,7 +51,7 @@ public final class ShipDto extends AbstractDto {
     private final long cond;
 
     /** 入渠時間 */
-    private final long docktime;
+    private long docktime;
 
     /** 修復資材 燃料 */
     private final long dockfuel;
@@ -293,6 +293,14 @@ public final class ShipDto extends AbstractDto {
      */
     public long getDocktime() {
         return this.docktime;
+    }
+
+    /**
+     * 入渠時間を設定します。
+     * @param docktime 入渠時間
+     */
+    public void setDocktime(long docktime) {
+        this.docktime = docktime;
     }
 
     /**

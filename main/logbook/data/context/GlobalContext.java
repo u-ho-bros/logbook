@@ -24,6 +24,7 @@ import logbook.data.DataQueue;
 import logbook.data.EventSender;
 import logbook.data.event.CallScript;
 import logbook.data.event.Material;
+import logbook.data.event.Nyukyo;
 import logbook.data.event.RemodelSlot;
 import logbook.dto.BattleDto;
 import logbook.dto.BattleResultDto;
@@ -70,6 +71,7 @@ public final class GlobalContext {
             SENDER.addEventListener(new CallScript());
             SENDER.addEventListener(new RemodelSlot());
             SENDER.addEventListener(new Material());
+            SENDER.addEventListener(new Nyukyo());
         }
     }
 
@@ -1157,6 +1159,7 @@ public final class GlobalContext {
         ShipDto ship = ShipContext.get().get(ndock.getNdockid());
         if (ship != null) {
             ship.setNowHp(ship.getMaxhp());
+            ship.setDocktime(0);
             String fleetid = ship.getFleetid();
             if (fleetid != null) {
                 DockDto dockdto = dock.get(fleetid);

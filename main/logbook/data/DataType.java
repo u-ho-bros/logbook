@@ -31,6 +31,8 @@ public enum DataType {
     NDOCK("/kcsapi/api_get_member/ndock"),
     /** 高速修復 */
     SPEED_CHANGE("/kcsapi/api_req_nyukyo/speedchange"),
+    /** 入渠開始 */
+    NYUKYO("/kcsapi/api_req_nyukyo/start"),
     /** アイテム一覧 */
     SLOTITEM_MEMBER("/kcsapi/api_get_member/slot_item"),
     /** 艦隊 */
