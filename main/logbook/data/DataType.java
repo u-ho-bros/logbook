@@ -29,6 +29,10 @@ public enum DataType {
     MATERIAL("/kcsapi/api_get_member/material"),
     /** 入渠ドック */
     NDOCK("/kcsapi/api_get_member/ndock"),
+    /** 高速修復 */
+    SPEED_CHANGE("/kcsapi/api_req_nyukyo/speedchange"),
+    /** 入渠開始 */
+    NYUKYO("/kcsapi/api_req_nyukyo/start"),
     /** アイテム一覧 */
     SLOTITEM_MEMBER("/kcsapi/api_get_member/slot_item"),
     /** 艦隊 */
@@ -61,6 +65,8 @@ public enum DataType {
     CREATE_ITEM("/kcsapi/api_req_kousyou/createitem"),
     /** 建造 */
     CREATE_SHIP("/kcsapi/api_req_kousyou/createship"),
+    /** 高速建造 */
+    CRATE_SHIP_SPEED_CHANGE("/kcsapi/api_req_kousyou/createship_speedchange"),
     /** 建造ドック */
     KDOCK("/kcsapi/api_get_member/kdock"),
     /** 建造(入手) */
