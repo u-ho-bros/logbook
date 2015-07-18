@@ -1334,7 +1334,10 @@ public final class GlobalContext {
         if ("-".equals(flagship)) {
             flagship = "";
         }
-        int afterlv = object.getJsonNumber("api_afterlv").intValue();
+        int afterlv = 0;
+        if (object.containsKey("api_afterlv")) {
+            afterlv = object.getJsonNumber("api_afterlv").intValue();
+        }
         int maxBull = 0;
         if (object.containsKey("api_bull_max")) {
             maxBull = object.getJsonNumber("api_bull_max").intValue();
